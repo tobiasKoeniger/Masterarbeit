@@ -1,6 +1,11 @@
 
 from hx711 import HX711
 
+import board
+import busio
+import digitalio
+
+
 class WeightSensor:	
 	
 	def __init__(self):
@@ -26,7 +31,9 @@ class WeightSensor:
 		
 		
 	def temperatureCompensation(self, weight, temperature):
+		
+		temperature_weight_constant = 50
 			
-		adjusted_weight = weight - (temperature - 22) * 22.5
+		adjusted_weight = weight - (temperature - 22) * temperature_weight_constant
 		
 		return adjusted_weight

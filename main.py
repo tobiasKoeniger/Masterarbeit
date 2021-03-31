@@ -15,6 +15,7 @@ from dht22 import DHT22
 from lightSensor import LightSensor
 from waterTemperatureSensor import WaterTemperatureSensor
 from distanceSensor import DistanceSensor
+from pHsensor import PHsensor
 
 
 def main():
@@ -24,10 +25,26 @@ def main():
     print()
     
     weightsensor1 = WeightSensor()
+    print("Weight sensor init successful")
+    
     dht22 = DHT22()
+    print("Temperature and humidity sensor init successful")
+    
     lightSensor = LightSensor()
+    print("Light sensor init successful")
+    
     waterTemperatureSensor = WaterTemperatureSensor()
+    print("Water temperature sensor init successful")
+    
     distanceSensor1 = DistanceSensor()
+    print("Distance sensor init successful")
+    
+    pHsensor = PHsensor()
+    print("PH sensor init successful")
+    
+    print()
+    print()
+    
 
     def cleanAndExit():
         
@@ -66,17 +83,20 @@ def main():
             
             weight = weightsensor1.getLoad()
             
-            # adjusted_weight = weightsensor1.temperatureCompensation(weight, temperature)
+            adjusted_weight = weightsensor1.temperatureCompensation(weight, temperature)
 
             print ("Weight: {} g".format(weight))
-            # print ("Temperature adjusted weight: {:.0f} g".format(adjusted_weight))
+            print ("Temperature adjusted weight: {:.0f} g".format(adjusted_weight))
             
+            
+            pH = pHsensor.getPH()
+            print ("PH: {:.3f}".format(pH))
             
             
 
             print()
 
-            time.sleep(1)
+            time.sleep(0)
 
         except (KeyboardInterrupt, SystemExit):
             cleanAndExit()
