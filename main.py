@@ -8,14 +8,16 @@ import sys
 
 import RPi.GPIO as GPIO
 
-sys.path.append('hx711')
+# sys.path.append('hx711')
 
-from weightSensor import WeightSensor
+# from weightSensor import WeightSensor
 from dht22 import DHT22
 from lightSensor import LightSensor
 from waterTemperatureSensor import WaterTemperatureSensor
 from distanceSensor import DistanceSensor
 from pHsensor import PHsensor
+
+from gpioExpander import GPIOExpander
 
 
 def main():
@@ -24,8 +26,8 @@ def main():
     print("Hydroponics Software Start")
     print()
     
-    weightsensor1 = WeightSensor()
-    print("Weight sensor init successful")
+    # weightsensor1 = WeightSensor()
+    # print("Weight sensor init successful")
     
     dht22 = DHT22()
     print("Temperature and humidity sensor init successful")
@@ -41,6 +43,8 @@ def main():
     
     pHsensor = PHsensor()
     print("PH sensor init successful")
+    
+    gpioExpander = GPIOExpander 
     
     print()
     print()
@@ -81,12 +85,12 @@ def main():
             print ("Distance 1: {0} mm".format(distance1) )
             
             
-            weight = weightsensor1.getLoad()
+            # weight = weightsensor1.getLoad()
             
-            adjusted_weight = weightsensor1.temperatureCompensation(weight, temperature)
+            # adjusted_weight = weightsensor1.temperatureCompensation(weight, temperature)
 
-            print ("Weight: {} g".format(weight))
-            print ("Temperature adjusted weight: {:.0f} g".format(adjusted_weight))
+            # print ("Weight: {} g".format(weight))
+            # print ("Temperature adjusted weight: {:.0f} g".format(adjusted_weight))
             
             
             pH = pHsensor.getPH()

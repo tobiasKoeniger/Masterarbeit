@@ -32,7 +32,13 @@ class WaterTemperatureSensor:
 		
 	def steinhart_temperature_C(self, resistance, Ro=10000.0, To=25.0, beta=3950.0):
 
-		steinhart = (log(resistance / Ro)) / beta      # log(R/Ro) / beta
+		if ((resistance / Ro) <= 0):
+			
+			print("Warning: Temperature sensor out of range")
+			
+			return 0
+
+		steinhart = (log(resistance / Ro)) / beta      # log(R/Ro) / beta		
 		steinhart += 1.0 / (To + 273.15)         # log(R/Ro) / beta + 1/To
 		steinhart = (1.0 / steinhart) - 273.15   # Invert, convert to C
 
