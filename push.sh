@@ -2,11 +2,11 @@
 
 git add .
 
-message=$(date +'%m/%d/%Y')
+message=$(date +'%d/%m/%Y %H:%M')
 
 echo "${message}"
 
-git commit -m ${message}
+git commit -m "${message}"
 
 git push origin master
 
