@@ -2,11 +2,9 @@
 
 git add .
 
-now=`date`
+message=$(date +'%m/%d/%Y')
 
-message=$(now +'%m/%d/%Y')
-
-echo message
+echo "${message}"
 
 git commit -m message
 
