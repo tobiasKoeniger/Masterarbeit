@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# git script
+
 git add .
 
 message=$(date +'%d/%m/%Y %H:%M')
