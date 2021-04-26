@@ -1,0 +1,6 @@
+ssh-add
+
+i2cdetect -y 1
+
+raspistill -v -o
+

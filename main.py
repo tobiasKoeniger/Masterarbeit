@@ -7,6 +7,9 @@ import time
 import sys
 
 import RPi.GPIO as GPIO
+from gpiozero import LED
+
+import mysql.connector
 
 # sys.path.append('hx711')
 
@@ -21,7 +24,7 @@ from gpioExpander import GPIOExpander
 
 
 def main():
-    
+
     print("--------------------------")
     print("Hydroponics Software Start")
     print()
@@ -29,20 +32,64 @@ def main():
     # weightsensor1 = WeightSensor()
     # print("Weight sensor init successful")
     
+    with open('credentials.txt', 'r') as reader:
+        credentials = reader.readlines()
+        
+    user = credentials[2]
+    password = credentials[5]
+    
+    mydb = mysql.connector.connect(
+      host="localhost",
+      user=user,
+      password=password
+    )
+    
+    mycursor = mydb.cursor()
+
+    mycursor.execute("CREATE DATABASE mydatabase")
+    
+    mycursor.execute("SHOW DATABASES")
+
+    for x in mycursor:
+      print(x)
+    
+    
+    transistor5V = LED(16)
+    transistor3V3 = LED(26)
+    transistorPH = LED(6)
+    
+    transistor5V.off()
+    print("5 V circuit powered on")
+    
+    transistor3V3.off()
+    print("3.3 V circuit powered on")
+    
+    transistorPH.off()
+    print("PH sensor powered on")
+    
+    print()
+        
+    
+    print("Temperature and humidity sensor init.. ", end = '')
     dht22 = DHT22()
-    print("Temperature and humidity sensor init successful")
+    print("successful")
     
+    print("Light sensor init.. ", end = '')
     lightSensor = LightSensor()
-    print("Light sensor init successful")
+    print("successful")
     
+    print("Water temperature sensor init.. ", end = '')
     waterTemperatureSensor = WaterTemperatureSensor()
-    print("Water temperature sensor init successful")
+    print("successful")
     
+    print("Distance sensor init.. ", end = '')
     distanceSensor1 = DistanceSensor()
-    print("Distance sensor init successful")
+    print("successful")
     
+    print("PH sensor init.. ", end = '')
     pHsensor = PHsensor()
-    print("PH sensor init successful")
+    print("successful")
+
     
     gpioExpander = GPIOExpander 
     
@@ -52,9 +99,9 @@ def main():
 
     def cleanAndExit():
         
-        print("Cleaning...")
+        # print("Cleaning...")
 
-        GPIO.cleanup()
+        # GPIO.cleanup()
             
         print("Bye!")
         print("\n")
@@ -93,12 +140,20 @@ def main():
             # print ("Temperature adjusted weight: {:.0f} g".format(adjusted_weight))
             
             
+            
             pH = pHsensor.getPH()
             print ("PH: {:.3f}".format(pH))
-            
-            
 
             print()
+            
+            
+            # variables to dict
+            # dictionary = {}
+            
+            
+            # for variable in ["humidity", "temperature", "height"]:
+              #   dictionary[variable] = eval(variable)
+            
 
             time.sleep(0)
 
