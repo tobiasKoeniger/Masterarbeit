@@ -2,6 +2,8 @@
 
 # git script
 
+cd ~/Software/
+
 git config --global user.email "tobias.koeniger@googlemail.com"
 
 git add .
