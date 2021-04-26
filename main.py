@@ -32,6 +32,7 @@ def main():
     # weightsensor1 = WeightSensor()
     # print("Weight sensor init successful")
     
+    # database credentials
     with open('credentials.txt', 'r') as reader:
         credentials = reader.readlines()
         
@@ -46,7 +47,7 @@ def main():
     
     mycursor = mydb.cursor()
 
-    mycursor.execute("CREATE DATABASE mydatabase")
+    # mycursor.execute("CREATE DATABASE mydatabase")
     
     mycursor.execute("SHOW DATABASES")
 
