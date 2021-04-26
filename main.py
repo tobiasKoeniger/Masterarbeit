@@ -33,27 +33,86 @@ def main():
     # print("Weight sensor init successful")
     
     # database credentials
-    with open('credentials.txt', 'r') as reader:
-        credentials = reader.readlines()
+    try:
+        with open('credentials.txt', 'r') as reader:
+            credentials = reader.readlines()
+        print("Reading credentials successful")
+        
+    except Error as err:
+        print(f"Error: '{err}'")
         
     user = credentials[2]
     password = credentials[5]
     
-    mydb = mysql.connector.connect(
-      host="localhost",
-      user=user,
-      password=password
-    )
+    
+    try:
+        mydb = mysql.connector.connect(
+        
+            host="localhost",
+            user=user,
+            password=password
+        )
+        print("MySQL Database connection successful")
+        
+    except Error as err:
+        print(f"The error '{e}' occurred")
+        
     
     mycursor = mydb.cursor()
-
-    # mycursor.execute("CREATE DATABASE mydatabase")
     
     mycursor.execute("SHOW DATABASES")
-
-    for x in mycursor:
-      print(x)
+    databaseNames = mycursor.fetchall()
     
+    if not 'hydroponics' in str(databaseNames):
+                
+        mycursor.execute("CREATE DATABASE hydroponics")
+        print("Database hydroponics created")
+        
+
+    mycursor.close()
+    mydb.close()
+    
+    
+    try:
+        mydb = mysql.connector.connect(
+        
+            host="localhost",
+            user=user,
+            password=password,
+            database="hydroponics"
+        )
+        print("Connection to MySQL Database hydroponics successful")
+        
+    except Error as err:
+        print(f"The error '{e}' occurred")
+        
+    mycursor = mydb.cursor()
+    
+    mycursor.execute("DROP TABLE sensors")
+    
+    mycursor.execute("SHOW TABLES")
+    tableNames = mycursor.fetchall()
+    
+    if not 'sensors' in str(tableNames):
+        
+        query = """ CREATE TABLE sensors (
+            time DATETIME,
+            temperature DOUBLE(8, 3),
+            humidity DOUBLE(8, 3),
+            lightIntensity DOUBLE(8, 3),
+            waterTemperature DOUBLE(8, 3)
+        ); """
+        
+        mycursor.execute(query)
+        print("Table sensors created")
+        
+        # Insert one row
+        sql = "INSERT INTO sensors VALUES (NOW(), 0, 0, 0, 0)"
+        mycursor.execute(sql)
+
+        mydb.commit()
+    
+    print()
     
     transistor5V = LED(16)
     transistor3V3 = LED(26)
@@ -100,7 +159,10 @@ def main():
 
     def cleanAndExit():
         
-        # print("Cleaning...")
+        print("Cleaning...")
+        
+        mycursor.close()
+        mydb.close()
 
         # GPIO.cleanup()
             
@@ -120,9 +182,10 @@ def main():
             
             
             [full_spectrum, infrared] = lightSensor.getValues()
+            visibleLight = full_spectrum - infrared
             print ("Full Spectrum(IR + Visible) : {} lux".format(full_spectrum) )
             print ("Infrared Value : {} lux".format(infrared) )
-            print ("Visible Value : {} lux".format(full_spectrum - infrared) )
+            print ("Visible Value : {} lux".format(visibleLight) )
             
             
             waterTemperature = waterTemperatureSensor.getTemperature()
@@ -144,8 +207,6 @@ def main():
             
             pH = pHsensor.getPH()
             print ("PH: {:.3f}".format(pH))
-
-            print()
             
             
             # variables to dict
@@ -154,8 +215,34 @@ def main():
             
             # for variable in ["humidity", "temperature", "height"]:
               #   dictionary[variable] = eval(variable)
+              
+              
+            # save data to mysql database table hydroponics
+                        
+            sql = """UPDATE sensors SET 
+                        time = NOW(), 
+                        temperature = %s, 
+                        humidity = %s, 
+                        lightIntensity = %s, 
+                        waterTemperature = %s"""
             
+            data = (temperature, humidity, visibleLight, waterTemperature)            
+            
+            mycursor.execute(sql, data)
 
+            mydb.commit()
+            
+            mycursor.execute("SELECT * FROM sensors")
+
+            myresult = mycursor.fetchall()
+
+            for x in myresult:
+                print(x)
+            
+            
+            print()
+            
+            
             time.sleep(0)
 
         except (KeyboardInterrupt, SystemExit):
