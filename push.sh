@@ -2,7 +2,7 @@
 
 # git script
 
-cd ~/Software/
+cd ~/Software/Masterarbeit/
 
 git config --global user.email "tobias.koeniger@googlemail.com"
 
