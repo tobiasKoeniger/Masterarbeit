@@ -232,12 +232,12 @@ def main():
 
             mydb.commit()
             
-            mycursor.execute("SELECT * FROM sensors")
+            # mycursor.execute("SELECT * FROM sensors")
 
-            myresult = mycursor.fetchall()
+            # myresult = mycursor.fetchall()
 
-            for x in myresult:
-                print(x)
+            # for x in myresult:
+                # print(x)
             
             
             print()

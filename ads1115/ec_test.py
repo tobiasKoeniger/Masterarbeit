@@ -76,6 +76,12 @@ while True:
 	
 	time.sleep(0.03)
 	
+	u = chan.voltage
+	
+	transistorEC.off()
+	
+	print("voltage: {:.2f} V".format(u))
+	
 	
 	transistorAntiEC.on()
 	
@@ -85,12 +91,6 @@ while True:
 	
 
 	#print(chan.value, chan.voltage)
-
-	u = chan.voltage
-	
-	transistorEC.off()
-	
-	print("voltage: {:.2f} V".format(u))
 	
 	#transistorEC.off()
 	#GPIO.output(5, GPIO.LOW)
