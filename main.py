@@ -88,10 +88,24 @@ def main():
         
     mycursor = mydb.cursor()
     
-    mycursor.execute("DROP TABLE sensors")
-    
     mycursor.execute("SHOW TABLES")
     tableNames = mycursor.fetchall()
+    
+    if 'sensors' in str(tableNames):
+
+        mycursor.execute("DROP TABLE sensors")
+        
+        mycursor.execute("SHOW TABLES")
+        tableNames = mycursor.fetchall()
+        
+        
+    # if 'actors' in str(tableNames):
+
+        # mycursor.execute("DROP TABLE actors")
+        
+        # mycursor.execute("SHOW TABLES")
+        # tableNames = mycursor.fetchall()
+    
     
     if not 'sensors' in str(tableNames):
         
@@ -111,6 +125,26 @@ def main():
         mycursor.execute(sql)
 
         mydb.commit()
+        
+        
+    # if not 'actors' in str(tableNames):
+        
+        # query = """ CREATE TABLE actors (
+            # time DATETIME,
+            # temperature DOUBLE(8, 3),
+            # humidity DOUBLE(8, 3),
+            # lightIntensity DOUBLE(8, 3),
+            # waterTemperature DOUBLE(8, 3)
+        # ); """
+        
+        # mycursor.execute(query)
+        # print("Table actors created")
+        
+        # # Insert one row
+        # sql = "INSERT INTO actors VALUES (NOW(), 0, 0, 0, 0)"
+        # mycursor.execute(sql)
+
+        # mydb.commit()
     
     print()
     

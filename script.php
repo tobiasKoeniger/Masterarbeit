@@ -9,8 +9,11 @@ $lines = file($filepath);
 $username = $lines[2];
 $password = $lines[5];
 
-echo $username;
-echo $password;
+$username = str_replace("\n", "", $username);
+$password = str_replace("\n", "", $password);
+
+echo "Username: " . $username . "\n";
+echo "Password: " . $password . "\n\n";
 
 //// Create connection
 $conn = new mysqli($servername, $username, $password, "hydroponics");
@@ -21,5 +24,17 @@ if ($conn->connect_error) {
   // die("Connection failed: " . $conn->connect_error);
 }
 // echo "Connected successfully";
+
+$sql = "SELECT time, temperature, humidity, lightIntensity, waterTemperature FROM sensors";
+
+$result = $conn->query($sql);
+
+$row = $result->fetch_assoc();
+
+$row = json_encode($row);
+
+echo $row;
+
+$conn->close();
 
 ?>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  </head>
+  
+  <body>
+    
+<!--
+    <div id="charts">
+-->
+      <div class="gauge" id="chart1" style="width: 200px; height: 200px; display: inline-block"></div>
+      <div class="gauge" id="chart2" style="width: 200px; height: 200px; display: inline-block;"></div>
+<!--
+    </div>
+-->
+    
+    <div id="information"></div>
+    
+    
+    <script type="text/javascript">
+		
+      var source = new EventSource("demo_sse.php");
+
+      if(typeof(EventSource) !== "undefined") {
+	// Yes! Server-sent events support!
+	// Some code.....
+	document.getElementById("information").innerHTML += "Browser supports Server-Sent Events. <br>";
+	
+      } else {
+	// Sorry! No server-sent events support..
+	document.getElementById("information").innerHTML += "Browser DOES NOT support Server-Sent Events. <br>";
+      }	
+
+      source.onmessage = function(event) {
+	
+	sensorData = JSON.parse(event.data)
+
+	document.getElementById("information").innerHTML = event.data + "<br>";
+
+      };
+	   
+	   
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+
+        var data1 = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Air temp.', 0],
+        ]);
+	
+	var data2 = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Humidity', 0],
+        ]);
+
+        var options1 = {
+          width: 200, height: 200,
+	  min: 0, max: 50,
+          redFrom: 40, redTo: 50,
+          yellowFrom: 30, yellowTo: 40,
+	  majorTicks: 5,
+          minorTicks: 5
+        };
+	
+	var options2 = {
+          width: 200, height: 200,
+	  min: 0, max: 100,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+	  majorTicks: 5,
+          minorTicks: 5
+        };
+
+        var chart1 = new google.visualization.Gauge(document.getElementById('chart1'));
+	var chart2 = new google.visualization.Gauge(document.getElementById('chart2'));
+
+        chart1.draw(data1, options1);
+	chart2.draw(data2, options2);
+
+        setInterval(function() {
+          data1.setValue(0, 1, sensorData.temperature);
+          chart1.draw(data1, options1);
+        }, 1000);
+        
+        setInterval(function() {
+          data2.setValue(0, 1, sensorData.humidity);
+          chart2.draw(data2, options2);
+        }, 1000);
+        
+        //setInterval(function() {
+          //data.setValue(2, 1, sensorData.lightIntensity);
+          //chart.draw(data, options);
+        //}, 1000);
+        
+        //setInterval(function() {
+          //data.setValue(3, 1, sensorData.waterTemperature);
+          //chart.draw(data, options);
+        //}, 1000);
+        
+      }
+    </script>
+    
+  </body>
+  
+</html>
+
