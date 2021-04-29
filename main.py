@@ -40,15 +40,18 @@ def main():
         
     except Error as err:
         print(f"Error: '{err}'")
-        
-    user = credentials[2]
-    password = credentials[5]
+    
+    host = credentials[2].rstrip()    
+    user = credentials[5].rstrip()
+    password = credentials[8].rstrip()
+    
+    print(host + ", " + user + ", " + password)
     
     
     try:
         mydb = mysql.connector.connect(
         
-            host="localhost",
+            host=host,
             user=user,
             password=password
         )
@@ -66,8 +69,7 @@ def main():
     if not 'hydroponics' in str(databaseNames):
                 
         mycursor.execute("CREATE DATABASE hydroponics")
-        print("Database hydroponics created")
-        
+        print("Database hydroponics created")            
 
     mycursor.close()
     mydb.close()
@@ -99,12 +101,12 @@ def main():
         tableNames = mycursor.fetchall()
         
         
-    # if 'actors' in str(tableNames):
+    if 'userInput' in str(tableNames):
 
-        # mycursor.execute("DROP TABLE actors")
+        mycursor.execute("DROP TABLE userInput")
         
-        # mycursor.execute("SHOW TABLES")
-        # tableNames = mycursor.fetchall()
+        mycursor.execute("SHOW TABLES")
+        tableNames = mycursor.fetchall()
     
     
     if not 'sensors' in str(tableNames):
@@ -127,24 +129,22 @@ def main():
         mydb.commit()
         
         
-    # if not 'actors' in str(tableNames):
+    if not 'userInput' in str(tableNames):
         
-        # query = """ CREATE TABLE actors (
-            # time DATETIME,
-            # temperature DOUBLE(8, 3),
-            # humidity DOUBLE(8, 3),
-            # lightIntensity DOUBLE(8, 3),
-            # waterTemperature DOUBLE(8, 3)
-        # ); """
+        query = """ CREATE TABLE userInput (
+            time DATETIME,
+            systemState BOOLEAN
+        ); """
         
-        # mycursor.execute(query)
-        # print("Table actors created")
+        mycursor.execute(query)
+        print("Table userInput created")
         
-        # # Insert one row
-        # sql = "INSERT INTO actors VALUES (NOW(), 0, 0, 0, 0)"
-        # mycursor.execute(sql)
+        # Insert one row
+        sql = "INSERT INTO userInput VALUES (NOW(), FALSE)"
+        mycursor.execute(sql)
 
-        # mydb.commit()
+        mydb.commit()
+
     
     print()
     
@@ -266,12 +266,14 @@ def main():
 
             mydb.commit()
             
-            # mycursor.execute("SELECT * FROM sensors")
+            
+            # print database
+            mycursor.execute("SELECT * FROM userInput")
 
-            # myresult = mycursor.fetchall()
+            myresult = mycursor.fetchall()
 
-            # for x in myresult:
-                # print(x)
+            for x in myresult:
+                print(x)
             
             
             print()
