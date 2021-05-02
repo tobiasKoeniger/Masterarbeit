@@ -4,7 +4,7 @@
 
 cd ~/Software/Masterarbeit/
 
-git config --global user.email "tobias.koeniger@googlemail.com"
+#git config --global user.email "tobias.koeniger@googlemail.com"
 
 git add .
 
