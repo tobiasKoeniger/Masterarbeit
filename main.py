@@ -116,7 +116,10 @@ def main():
             temperature DOUBLE(8, 3),
             humidity DOUBLE(8, 3),
             lightIntensity DOUBLE(8, 3),
-            waterTemperature DOUBLE(8, 3)
+            waterTemperature DOUBLE(8, 3),
+            ecLevel DOUBLE(8, 3),
+            phLevel DOUBLE(8, 3),
+            waterLevel DOUBLE(8, 3)  
         ); """
         
         mycursor.execute(query)
@@ -258,9 +261,12 @@ def main():
                         temperature = %s, 
                         humidity = %s, 
                         lightIntensity = %s, 
-                        waterTemperature = %s"""
+                        waterTemperature = %s,
+                        ecLevel DOUBLE(8, 3),
+                        phLevel DOUBLE(8, 3),
+                        waterLevel DOUBLE(8, 3)"""
             
-            data = (temperature, humidity, visibleLight, waterTemperature)            
+            data = (temperature, humidity, visibleLight, waterTemperature, 0, pH, distance1)            
             
             mycursor.execute(sql, data)
 
