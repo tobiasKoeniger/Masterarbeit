@@ -126,7 +126,7 @@ def main():
         print("Table sensors created")
         
         # Insert one row
-        sql = "INSERT INTO sensors VALUES (NOW(), 0, 0, 0, 0)"
+        sql = "INSERT INTO sensors VALUES (NOW(), 0, 0, 0, 0, 0, 0, 0)"
         mycursor.execute(sql)
 
         mydb.commit()
@@ -136,14 +136,28 @@ def main():
         
         query = """ CREATE TABLE userInput (
             time DATETIME,
-            systemState BOOLEAN
+            systemState BOOLEAN,
+            pHmeasureState BOOLEAN,
+            ledState BOOLEAN,
+            autoLedState BOOLEAN,
+            sunrise TIME,
+            sunset TIME,
+            autoHeightAdaptionState BOOLEAN,
+            plantingDate DATE, 
+            ledUp BOOLEAN,
+            ledDown BOOLEAN
         ); """
+
         
         mycursor.execute(query)
         print("Table userInput created")
         
         # Insert one row
-        sql = "INSERT INTO userInput VALUES (NOW(), FALSE)"
+        # sql = "INSERT INTO userInput VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        # data = ("NOW()", "FALSE", "FALSE", "FALSE", "TRUE", "08:00:00", "20:00:00", "TRUE", "CURDATE()", "FALSE", "FALSE")
+        # mycursor.execute(sql, data)
+        
+        sql = "INSERT INTO userInput VALUES (NOW(), FALSE, FALSE, FALSE, TRUE, '08:00:00', '20:00:00', TRUE, CURDATE(), FALSE, FALSE)"
         mycursor.execute(sql)
 
         mydb.commit()
@@ -262,9 +276,9 @@ def main():
                         humidity = %s, 
                         lightIntensity = %s, 
                         waterTemperature = %s,
-                        ecLevel DOUBLE(8, 3),
-                        phLevel DOUBLE(8, 3),
-                        waterLevel DOUBLE(8, 3)"""
+                        ecLevel = %s,
+                        phLevel = %s,
+                        waterLevel = %s"""
             
             data = (temperature, humidity, visibleLight, waterTemperature, 0, pH, distance1)            
             
