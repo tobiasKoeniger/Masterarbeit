@@ -24,6 +24,9 @@ class PHsensor:
 		# PH
 		pH = 7.65 + ( (7.65 - 3.64) / (3.85 - 4.236) ) * (chan2.voltage - 3.85)
 		
+		if (pH > 14):
+			pH = 0
+		
 		return pH
 		
 	

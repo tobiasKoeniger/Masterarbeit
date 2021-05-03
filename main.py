@@ -93,20 +93,20 @@ def main():
     mycursor.execute("SHOW TABLES")
     tableNames = mycursor.fetchall()
     
-    if 'sensors' in str(tableNames):
+    # if 'sensors' in str(tableNames):
 
-        mycursor.execute("DROP TABLE sensors")
+        # mycursor.execute("DROP TABLE sensors")
         
-        mycursor.execute("SHOW TABLES")
-        tableNames = mycursor.fetchall()
+        # mycursor.execute("SHOW TABLES")
+        # tableNames = mycursor.fetchall()
         
         
-    if 'userInput' in str(tableNames):
+    # if 'userInput' in str(tableNames):
 
-        mycursor.execute("DROP TABLE userInput")
+        # mycursor.execute("DROP TABLE userInput")
         
-        mycursor.execute("SHOW TABLES")
-        tableNames = mycursor.fetchall()
+        # mycursor.execute("SHOW TABLES")
+        # tableNames = mycursor.fetchall()
     
     
     if not 'sensors' in str(tableNames):
