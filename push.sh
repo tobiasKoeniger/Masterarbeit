@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Run by typing sh push.sh
+
 # git script
 
 cd ~/Software/Masterarbeit/
@@ -14,5 +16,6 @@ echo "${message}"
 
 git commit -m "${message}"
 
-git push 
+git push origin master
+
 

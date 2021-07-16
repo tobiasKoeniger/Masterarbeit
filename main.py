@@ -4,7 +4,8 @@ print("\n")
 print("Libraries loading")
 
 # Loading libraries
-import time 
+import time
+import datetime 
 import sys
 
 # Raspberry GPIO libraries
@@ -24,6 +25,9 @@ from pHsensor import PHsensor
 
 # Load expander class
 from gpioExpander import GPIOExpander
+
+# Load userInput class
+from userInput import UserInput
 
 
 # Begin of main program
@@ -184,7 +188,7 @@ def main():
     transistorPH.off()
     print("PH sensor powered on")
     
-    # time.sleep(1)
+    time.sleep(0.5)
     
     print()
         
@@ -219,9 +223,11 @@ def main():
     # GPIO expander
     # The expander is not needed, but can be used to add more 
     # components to the system.
-    print("GPIO expander init.. ", end = '')
-    gpioExpander = GPIOExpander() 
-    print("successful")
+    # print("GPIO expander init.. ", end = '')
+    # gpioExpander = GPIOExpander() 
+    # print("successful")
+    
+    # userInput = UserInput()
     
     print()
     print()
@@ -303,14 +309,31 @@ def main():
             mydb.commit()
             
             
-            # Print the database tabel 'userInput'
+                    
+            # query = """ CREATE TABLE userInput (
+                # time DATETIME,
+                # systemState BOOLEAN,
+                # pHmeasureState BOOLEAN,
+                # ledState BOOLEAN,
+                # autoLedState BOOLEAN,
+                # sunrise TIME,
+                # sunset TIME,
+                # autoHeightAdaptionState BOOLEAN,
+                # plantingDate DATE, 
+                # ledUp BOOLEAN,
+                # ledDown BOOLEAN
+            # ); """
+            
+            # Get the database table 'userInput'
             mycursor.execute("SELECT * FROM userInput")
 
             myresult = mycursor.fetchall()
 
+            # Print the table
             for x in myresult:
                 print(x)
             
+            print(x[0])
             
             print()
             
