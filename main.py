@@ -178,6 +178,8 @@ def main():
     transistorPH.off()
     print("PH sensor powered on")
     
+    time.sleep(1)
+    
     print()
         
     
