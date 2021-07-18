@@ -9,7 +9,7 @@ import datetime
 import sys
 
 # Raspberry GPIO libraries
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 from gpiozero import LED
 
 # MySQL library
@@ -26,8 +26,14 @@ from pHsensor import PHsensor
 # Load expander class
 from gpioExpander import GPIOExpander
 
-# Load userInput class
-from userInput import UserInput
+# # Load userInput class
+# from userInput import UserInput
+
+# Load gpio class
+from gpio import GPIO
+
+# Load database class
+from database import Database
 
 
 # Begin of main program
@@ -38,160 +44,28 @@ def main():
     print("Hydroponics Software Start")
     print()
 
-    
-    # Read database credentials from .txt file
-    try:
-        # Open file
-        with open('credentials.txt', 'r') as reader:
-            credentials = reader.readlines()
-        print("Reading credentials successful")
-        
-    # Show error message
-    except Error as err:
-        print(f"Error: '{err}'")
-    
-    # Remove trailing spaces from read strings
-    host = credentials[2].rstrip()    
-    user = credentials[5].rstrip()
-    password = credentials[8].rstrip()
-    
-    print(host + ", " + user + ", " + password)
-    
-    
-    # Connect to the MySQL database
-    try:
-        mydb = mysql.connector.connect(
-        
-            host=host,
-            user=user,
-            password=password
-        )
-        print("MySQL Database connection successful")
-        
-    # Show error message
-    except Error as err:
-        print(f"The error '{e}' occurred")
-        
-    
-    mycursor = mydb.cursor()
-    
-    # Fetch all database names
-    mycursor.execute("SHOW DATABASES")
-    databaseNames = mycursor.fetchall()
-    
-    # Check if database 'hydroponics' is available
-    if not 'hydroponics' in str(databaseNames):
-                
-        # If not, create new database
-        mycursor.execute("CREATE DATABASE hydroponics")
-        print("Database hydroponics created")            
 
-    # Close connection
-    mycursor.close()
-    mydb.close()
+    # Database routines
     
+    # Initialize the database class
+    print("Database init.. ", end = '\n\n')
+    database = Database()
+    print("\nsuccessful")    
     
-    # Now, try to directly connect to the 'hydroponics' database
-    try:
-        mydb = mysql.connector.connect(
-        
-            host="localhost",
-            user=user,
-            password=password,
-            database="hydroponics"
-        )
-        print("Connection to MySQL Database hydroponics successful")
-        
-    # Show error
-    except Error as err:
-        print(f"The error '{e}' occurred")
-        
-    mycursor = mydb.cursor()
-    
-    # Fetch all table names
-    mycursor.execute("SHOW TABLES")
-    tableNames = mycursor.fetchall()
-    
-    
-    # Check, if table 'sensors' is available
-    if not 'sensors' in str(tableNames):
-        
-        # If not, create table 'sensors'
-        query = """ CREATE TABLE sensors (
-            time DATETIME,
-            temperature DOUBLE(8, 3),
-            humidity DOUBLE(8, 3),
-            lightIntensity DOUBLE(8, 3),
-            waterTemperature DOUBLE(8, 3),
-            ecLevel DOUBLE(8, 3),
-            phLevel DOUBLE(8, 3),
-            waterLevel DOUBLE(8, 3)  
-        ); """
-        
-        mycursor.execute(query)
-        print("Table sensors created")
-        
-        # Insert one data row with zeroes
-        sql = "INSERT INTO sensors VALUES (NOW(), 0, 0, 0, 0, 0, 0, 0)"
-        mycursor.execute(sql)
-
-        mydb.commit()
-        
-    
-    # Check, if table 'userInput' is available
-    if not 'userInput' in str(tableNames):
-        
-        # If not, create table 'userInput'
-        query = """ CREATE TABLE userInput (
-            time DATETIME,
-            systemState BOOLEAN,
-            pHmeasureState BOOLEAN,
-            ledState BOOLEAN,
-            autoLedState BOOLEAN,
-            sunrise TIME,
-            sunset TIME,
-            autoHeightAdaptionState BOOLEAN,
-            plantingDate DATE, 
-            ledUp BOOLEAN,
-            ledDown BOOLEAN
-        ); """
-
-        
-        mycursor.execute(query)
-        print("Table userInput created")    
-        
-        # Insert one data row with default values
-        sql = "INSERT INTO userInput VALUES (NOW(), FALSE, FALSE, FALSE, TRUE, '08:00:00', '20:00:00', TRUE, CURDATE(), FALSE, FALSE)"
-        mycursor.execute(sql)
-
-        mydb.commit()
-
     
     print()
     
-    # Now, start the program:
     
-    # Initialize the power control transistors
-    transistor5V = LED(16)
-    transistor3V3 = LED(26)
-    transistorPH = LED(6)
+    # Initialize classes
     
-    # Power 5 V on
-    transistor5V.off()
-    print("5 V circuit powered on")
+    # Initialize the GPIO class
+    print("GPIO init.. ", end = '\n\n')
+    gpio = GPIO()
+    print("\nsuccessful")
     
-    # Power 3.3 V on 
-    transistor3V3.off()
-    print("3.3 V circuit powered on")
-    
-    # Power the pH sensor on 
-    transistorPH.off()
-    print("PH sensor powered on")
-    
-    time.sleep(0.5)
+    time.sleep(1)
     
     print()
-        
     
     # Now, initialize all sensor classes
     
@@ -227,6 +101,7 @@ def main():
     # gpioExpander = GPIOExpander() 
     # print("successful")
     
+    # # userInput class to store user input data 
     # userInput = UserInput()
     
     print()
@@ -255,11 +130,38 @@ def main():
     while True:
         
         # Try to run the loop
-        try:            
+        try:    
+            
+            # Check userInput data
+            
+            userInput = database.getUserInput()            
+            
+            
+            # userInput.time = result[0]
+            # userInput.systemState = result[1]
+            # userInput.pHmeasureState = result[2]
+            # userInput.ledState = result[3]
+            # userInput.autoLedState = result[4]
+            # userInput.sunrise = result[5]
+            # userInput.sunset = result[6]
+            # userInput.autoHeightAdaptionState = result[7]
+            # userInput.plantingDate = result[8]
+            # userInput.ledUp = result[9]
+            # userInput.ledDown = result[10]
+            
+            print()
+            
+            
+            # Check, if system is switched on
+            if (userInput.systemState == True):
+                
+            
+            # Read sensors
             
             # Read the humidity and temperature values from the DHT22
+            print("Reading sensors")
             [humidity, temperature] = dht22.getValues()
-            
+            # [humidity, temperature] = [0, 0]
             print ("Humidity: {:.1f} %".format(humidity) )
             print ("Temperature: {:.1f} °C".format(temperature) )
             
@@ -290,50 +192,10 @@ def main():
             print ("PH: {:.3f}".format(pH))    
               
               
-            # Update the sensor data in the database table 'hydroponics'
-                        
-            sql = """UPDATE sensors SET 
-                        time = NOW(), 
-                        temperature = %s, 
-                        humidity = %s, 
-                        lightIntensity = %s, 
-                        waterTemperature = %s,
-                        ecLevel = %s,
-                        phLevel = %s,
-                        waterLevel = %s"""
+            # Update the sensor data in the database table 'sensors'
             
-            data = (temperature, humidity, visibleLight, waterTemperature, 0, pH, distance1)            
-            
-            mycursor.execute(sql, data)
+            database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, pH, distance1)                                                 
 
-            mydb.commit()
-            
-            
-                    
-            # query = """ CREATE TABLE userInput (
-                # time DATETIME,
-                # systemState BOOLEAN,
-                # pHmeasureState BOOLEAN,
-                # ledState BOOLEAN,
-                # autoLedState BOOLEAN,
-                # sunrise TIME,
-                # sunset TIME,
-                # autoHeightAdaptionState BOOLEAN,
-                # plantingDate DATE, 
-                # ledUp BOOLEAN,
-                # ledDown BOOLEAN
-            # ); """
-            
-            # Get the database table 'userInput'
-            mycursor.execute("SELECT * FROM userInput")
-
-            myresult = mycursor.fetchall()
-
-            # Print the table
-            for x in myresult:
-                print(x)
-            
-            print(x[0])
             
             print()
             
