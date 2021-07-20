@@ -6,6 +6,7 @@ from userInput import UserInput
 
 
 class Database: 
+
 	
 	def __init__(self):
 		
@@ -140,8 +141,32 @@ class Database:
 
 			self.mydb.commit()
 			
+		self.closeConnection()
+		
 			
-	def updateSensors(temperature, humidity, visibleLight, waterTemperature, ec, pH, distance1):
+	def connectToDatabase(self):
+		
+		# Now, try to directly connect to the 'hydroponics' database
+		try:
+			self.mydb = mysql.connector.connect(
+			
+				host="localhost",
+				user=self.user,
+				password=self.password,
+				database="hydroponics"
+			)
+			# print("Connection to MySQL Database hydroponics successful")
+			
+		# Show error
+		except Error as err:
+			print(f"The error '{e}' occurred")
+			
+		self.mycursor = self.mydb.cursor()
+			
+			
+	def updateSensors(self, temperature, humidity, visibleLight, waterTemperature, ec, distance1):
+		
+		self.connectToDatabase()
 		
 		# Update the sensor data in the database table 'sensors'
 					
@@ -151,18 +176,40 @@ class Database:
 					humidity = %s, 
 					lightIntensity = %s, 
 					waterTemperature = %s,
-					ecLevel = %s,
-					phLevel = %s,
+					ecLevel = %s,					
 					waterLevel = %s"""
 
-		data = (temperature, humidity, visibleLight, waterTemperature, ec, pH, distance1)            
+		data = (temperature, humidity, visibleLight, waterTemperature, ec, distance1)            
 
 		self.mycursor.execute(sql, data)
 
 		self.mydb.commit()   
 		
+		self.closeConnection()
+			
+			
+	def updatePH(self, pH):
 		
-	def getUserInput():
+		self.connectToDatabase()
+		
+		# Update the sensor data in the database table 'sensors'
+					
+		sql = """UPDATE sensors SET 
+					time = NOW(), 
+					phLevel = %s"""
+
+		data = pH            
+
+		self.mycursor.execute(sql, data)
+
+		self.mydb.commit()   
+		
+		self.closeConnection()		
+		
+		
+	def getUserInput(self):
+		
+		self.connectToDatabase()
 		
 		# Get the database table 'userInput'
 		self.mycursor.execute("SELECT * FROM userInput")
@@ -175,16 +222,27 @@ class Database:
 			print(x)
 
 		# Copy the userInput data into the userInput class
-		self.userInput.time = result[0]
-		self.userInput.systemState = result[1]
-		self.userInput.pHmeasureState = result[2]
-		self.userInput.ledState = result[3]
-		self.userInput.autoLedState = result[4]
-		self.userInput.sunrise = result[5]
-		self.userInput.sunset = result[6]
-		self.userInput.autoHeightAdaptionState = result[7]
-		self.userInput.plantingDate = result[8]
-		self.userInput.ledUp = result[9]
-		self.userInput.ledDown = result[10]
+		self.userInput.time = x[0]
+		self.userInput.systemState = x[1]
+		self.userInput.pHmeasureState = x[2]
+		self.userInput.ledState = x[3]
+		self.userInput.autoLedState = x[4]
+		self.userInput.sunrise = x[5]
+		self.userInput.sunset = x[6]
+		self.userInput.autoHeightAdaptionState = x[7]
+		self.userInput.plantingDate = x[8]
+		self.userInput.ledUp = x[9]
+		self.userInput.ledDown = x[10]
 		
-		return self.userInput
+		self.closeConnection()
+		
+		return self.userInput		
+		
+	
+	def closeConnection(self):
+		
+		# Close all database connections
+		self.mycursor.close()
+		self.mydb.close()
+		
+		

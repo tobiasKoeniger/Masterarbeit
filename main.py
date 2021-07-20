@@ -61,9 +61,16 @@ def main():
     # Initialize the GPIO class
     print("GPIO init.. ", end = '\n\n')
     gpio = GPIO()
+    
+    # Turn the circuits on for initialization
+    gpio.transistor5V.on()
+    gpio.transistor3V3.off()
+    gpio.transistorPH.on()
+    print("All power circuits turned on")
+    
     print("\nsuccessful")
     
-    time.sleep(1)
+    time.sleep(100)
     
     print()
     
@@ -79,7 +86,7 @@ def main():
     lightSensor = LightSensor()
     print("successful")
     
-    # Water sensor
+    # Water sensor      
     print("Water temperature sensor init.. ", end = '')
     waterTemperatureSensor = WaterTemperatureSensor()
     print("successful")
@@ -104,8 +111,18 @@ def main():
     # # userInput class to store user input data 
     # userInput = UserInput()
     
+    
+    # Turn the circuits off again
+    # gpio.transistor5V.on()
+    # gpio.transistor3V3.on()
+    # gpio.transistorPH.on()
+    # print("All power circuits turned off")
+    
+    
     print()
     print()
+    
+    time.sleep(10)
     
 
     # If one manually closes the program with Ctrl+c:
@@ -114,10 +131,12 @@ def main():
         print("Cleaning...")
         
         # Closing the database connection
-        mycursor.close()
-        mydb.close()
+        # mycursor.close()
+        # mydb.close()
 
         # GPIO.cleanup()
+        
+        database.closeConnection()
             
         print("Bye!")
         print("\n")
@@ -130,24 +149,24 @@ def main():
     while True:
         
         # Try to run the loop
-        try:    
+        try:                            
             
             # Check userInput data
-            
+            # print(database.getUserInput().systemState)
             userInput = database.getUserInput()            
             
             
-            # userInput.time = result[0]
-            # userInput.systemState = result[1]
-            # userInput.pHmeasureState = result[2]
-            # userInput.ledState = result[3]
-            # userInput.autoLedState = result[4]
-            # userInput.sunrise = result[5]
-            # userInput.sunset = result[6]
-            # userInput.autoHeightAdaptionState = result[7]
-            # userInput.plantingDate = result[8]
-            # userInput.ledUp = result[9]
-            # userInput.ledDown = result[10]
+            # userInput.time = x[0]
+            # userInput.systemState = x[1]
+            # userInput.pHmeasureState = x[2]
+            # userInput.ledState = x[3]
+            # userInput.autoLedState = x[4]
+            # userInput.sunrise = x[5]
+            # userInput.sunset = x[6]
+            # userInput.autoHeightAdaptionState = x[7]
+            # userInput.plantingDate = x[8]
+            # userInput.ledUp = x[9]
+            # userInput.ledDown = x[10]
             
             print()
             
@@ -155,52 +174,81 @@ def main():
             # Check, if system is switched on
             if (userInput.systemState == True):
                 
+                # Turn the circuits on 
+                # gpio.transistor5V.off()
+                # gpio.transistor3V3.off()
+                # gpio.transistorPH.off()
+                print("All power circuits turned on")
+                
+                time.sleep(0.1)
             
-            # Read sensors
-            
-            # Read the humidity and temperature values from the DHT22
-            print("Reading sensors")
-            [humidity, temperature] = dht22.getValues()
-            # [humidity, temperature] = [0, 0]
-            print ("Humidity: {:.1f} %".format(humidity) )
-            print ("Temperature: {:.1f} °C".format(temperature) )
-            
-            
-            # Read the light sensor values
-            [full_spectrum, infrared] = lightSensor.getValues()
-            
-            # Calculate the share of visible light
-            visibleLight = full_spectrum - infrared
-            
-            print ("Full Spectrum(IR + Visible) : {} lux".format(full_spectrum) )
-            print ("Infrared Value : {} lux".format(infrared) )
-            print ("Visible Value : {} lux".format(visibleLight) )
-            
-            
-            # Read the water temperature sensor
-            waterTemperature = waterTemperatureSensor.getTemperature()
-            print ("Water temperature: {:.1f} °C".format(waterTemperature) )
-            
-            
-            # Read the distance sensor
-            distance1 = distanceSensor1.getDistance()
-            print ("Distance 1: {0} mm".format(distance1) )            
-            
-            
-            # Read the pH sensor
-            pH = pHsensor.getPH()
-            print ("PH: {:.3f}".format(pH))    
-              
-              
-            # Update the sensor data in the database table 'sensors'
-            
-            database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, pH, distance1)                                                 
-
+                # Read sensors
+                
+                # Read the humidity and temperature values from the DHT22
+                print("Reading sensors")
+                [humidity, temperature] = dht22.getValues()
+                print ("Humidity: {:.1f} %".format(humidity) )
+                print ("Temperature: {:.1f} °C".format(temperature) )
+                
+                
+                # Read the light sensor values
+                [full_spectrum, infrared] = lightSensor.getValues()
+                
+                # Calculate the share of visible light
+                visibleLight = full_spectrum - infrared
+                
+                print ("Full Spectrum(IR + Visible) : {} lux".format(full_spectrum) )
+                print ("Infrared Value : {} lux".format(infrared) )
+                print ("Visible Value : {} lux".format(visibleLight) )
+                
+                
+                # Read the water temperature sensor
+                waterTemperature = waterTemperatureSensor.getTemperature()
+                print ("Water temperature: {:.1f} °C".format(waterTemperature) )
+                
+                
+                # Read the distance sensor
+                distance1 = distanceSensor1.getDistance()
+                print ("Distance 1: {0} mm".format(distance1) )            
+                
+                if(userInput.pHmeasureState == True):
+                    
+                    # Turn pH sensor circuit on
+                    # gpio.transistorPH.off()
+                    
+                    time.sleep(0.1)
+                    
+                    # Read the pH sensor
+                    pH = pHsensor.getPH()
+                    print ("PH: {:.3f}".format(pH))    
+                    
+                    database.updatePH(pH)
+                    
+                else:
+                    # Turn pH sensor circuit off
+                    # gpio.transistorPH.on()
+                    pass
+                                        
+                # Update the sensor data in the database table 'sensors'
+                
+                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, distance1)         
+                
+                
+            else:
+                
+                # Turn the circuits off
+                # gpio.transistor5V.on()
+                # gpio.transistor3V3.on()
+                # gpio.transistorPH.on()
+                print("All power circuits turned off")
+                
+                time.sleep(0.1)
+                
             
             print()
             
             # Do not sleep
-            time.sleep(0)
+            # time.sleep(0)
 
         # Catch an error message and display the message
         except (KeyboardInterrupt, SystemExit):
