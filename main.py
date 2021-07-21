@@ -175,12 +175,13 @@ def main():
             if (userInput.systemState == True):
                 
                 # Turn the circuits on 
-                # gpio.transistor5V.off()
-                # gpio.transistor3V3.off()
-                # gpio.transistorPH.off()
-                print("All power circuits turned on")
+                gpio.transistor5V.off()
+                gpio.transistor3V3.off()                
+                print("3.3 V and 5 V circuits turned on")
                 
                 time.sleep(0.1)
+                
+                # Turn the circulation pump on
             
                 # Read sensors
                 
@@ -209,12 +210,17 @@ def main():
                 
                 # Read the distance sensor
                 distance1 = distanceSensor1.getDistance()
-                print ("Distance 1: {0} mm".format(distance1) )            
+                print ("Distance 1: {0} mm".format(distance1) )   
                 
+                # Update database
+                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, distance1)        
+                         
+                
+                # Check, if pH sensing is switched on 
                 if(userInput.pHmeasureState == True):
                     
                     # Turn pH sensor circuit on
-                    # gpio.transistorPH.off()
+                    gpio.transistorPH.off()
                     
                     time.sleep(0.1)
                     
@@ -222,33 +228,28 @@ def main():
                     pH = pHsensor.getPH()
                     print ("PH: {:.3f}".format(pH))    
                     
+                    # Update database
                     database.updatePH(pH)
                     
+                # PH sensing is switched off
                 else:
                     # Turn pH sensor circuit off
-                    # gpio.transistorPH.on()
-                    pass
-                                        
-                # Update the sensor data in the database table 'sensors'
+                    gpio.transistorPH.on()                                                            
                 
-                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, distance1)         
-                
-                
-            else:
-                
+
+            # System is switched off
+            else:                
                 # Turn the circuits off
-                # gpio.transistor5V.on()
-                # gpio.transistor3V3.on()
-                # gpio.transistorPH.on()
+                gpio.transistor5V.on()
+                gpio.transistor3V3.on()
+                
                 print("All power circuits turned off")
                 
                 time.sleep(0.1)
                 
             
             print()
-            
-            # Do not sleep
-            # time.sleep(0)
+                        
 
         # Catch an error message and display the message
         except (KeyboardInterrupt, SystemExit):

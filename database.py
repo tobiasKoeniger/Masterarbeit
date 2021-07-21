@@ -196,11 +196,9 @@ class Database:
 					
 		sql = """UPDATE sensors SET 
 					time = NOW(), 
-					phLevel = %s"""
+					phLevel = """ + str(pH)		
 
-		data = pH            
-
-		self.mycursor.execute(sql, data)
+		self.mycursor.execute(sql)
 
 		self.mydb.commit()   
 		
