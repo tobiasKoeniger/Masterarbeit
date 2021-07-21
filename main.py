@@ -182,6 +182,8 @@ def main():
                 time.sleep(0.1)
                 
                 # Turn the circulation pump on
+                gpio.pumpCirculation.value = 0.5
+                print("Turning the circulation pump on")
             
                 # Read sensors
                 
