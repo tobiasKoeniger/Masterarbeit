@@ -63,14 +63,14 @@ def main():
     gpio = GPIO()
     
     # Turn the circuits on for initialization
-    gpio.transistor5V.on()
+    gpio.transistor5V.off()
     gpio.transistor3V3.off()
-    gpio.transistorPH.on()
+    gpio.transistorPH.off()
     print("All power circuits turned on")
     
     print("\nsuccessful")
     
-    time.sleep(100)
+    time.sleep(0.1)
     
     print()
     
@@ -113,16 +113,16 @@ def main():
     
     
     # Turn the circuits off again
-    # gpio.transistor5V.on()
-    # gpio.transistor3V3.on()
-    # gpio.transistorPH.on()
-    # print("All power circuits turned off")
+    gpio.transistor5V.on()
+    gpio.transistor3V3.on()
+    gpio.transistorPH.on()
+    print("All power circuits turned off")
     
     
     print()
     print()
     
-    time.sleep(10)
+    # time.sleep(10)
     
 
     # If one manually closes the program with Ctrl+c:
