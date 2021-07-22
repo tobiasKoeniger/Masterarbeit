@@ -262,3 +262,16 @@
         userInput.ledUp = x[9]
         userInput.ledDown = x[10]          
         
+        
+        
+        # current_time = now.strftime("%H:%M:%S")
+        # print(now.hour)
+        # print(now.minute)
+        
+        # print(userInput.sunrise.hour)
+        # print(userInput.sunrise.minute)
+        
+        # print(now - userInput.sunrise)
+        
+        # if()
+        

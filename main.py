@@ -5,7 +5,8 @@ print("Libraries loading")
 
 # Loading libraries
 import time
-import datetime 
+from datetime import datetime 
+from datetime import timedelta
 import sys
 
 # Raspberry GPIO libraries
@@ -93,14 +94,28 @@ def main():
     
     # Distance sensor
     print("Distance sensor init.. ", end = '')
-    distanceSensor1 = DistanceSensor()
+    mainTankLevelSensor = DistanceSensor()
     print("successful")
     
     # PH sensor
     print("PH sensor init.. ", end = '')
     pHsensor = PHsensor()
     print("successful")
-
+    
+    
+    # Initialize main tank's water level buffer
+    # Array of ten 
+    waterLevelMainTankBuffer = [80] * 10
+    
+    # Number of tank level updates
+    waterLevelMainTankUpdates = 0
+    
+    # Initialize nutrient matrix
+    nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 0.5, 0.5, 1, 1.5, 1.5, 1.5],
+                     [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]
+    
     # GPIO expander
     # The expander is not needed, but can be used to add more 
     # components to the system.
@@ -112,11 +127,11 @@ def main():
     # userInput = UserInput()
     
     
-    # Turn the circuits off again
-    gpio.transistor5V.on()
+    # Turn the 3.3 V circuit and pH meter off again
+    # gpio.transistor5V.on()
     gpio.transistor3V3.on()
     gpio.transistorPH.on()
-    print("All power circuits turned off")
+    print("3.3 V circuit and pH meter turned off")
     
     
     print()
@@ -174,16 +189,18 @@ def main():
             # Check, if system is switched on
             if (userInput.systemState == True):
                 
-                # Turn the circuits on 
+                # Turn the 3.3 V and 5 V circuits on 
                 gpio.transistor5V.off()
                 gpio.transistor3V3.off()                
-                print("3.3 V and 5 V circuits turned on")
+                print("5 V circuit turned on")
                 
                 time.sleep(0.1)
+                # time.sleep(100)
                 
                 # Turn the circulation pump on
                 gpio.pumpCirculation.value = 0.5
-                print("Turning the circulation pump on")
+                print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
+            
             
                 # Read sensors
                 
@@ -210,13 +227,51 @@ def main():
                 print ("Water temperature: {:.1f} °C".format(waterTemperature) )
                 
                 
-                # Read the distance sensor
-                distance1 = distanceSensor1.getDistance()
-                print ("Distance 1: {0} mm".format(distance1) )   
+                # Read the main water level sensor
+                distance = mainTankLevelSensor.getDistance()
+                waterLevelMainTank = 250 - distance
+                print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
+                print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
                 
                 # Update database
-                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, distance1)        
+                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, waterLevelMainTank)        
                          
+                
+                # Check, if it is noon to adapt the main water tank's level
+                
+                # Get current time
+                now = datetime.now()
+                
+                # Set first value of buffer                
+                waterLevelMainTankBuffer[0] = waterLevelMainTank
+                waterLevelMainTankUpdates += 1
+                
+                # Rotate buffer
+                waterLevelMainTankBuffer = waterLevelMainTankBuffer[-1:] + waterLevelMainTankBuffer[:-1]
+                
+                print(waterLevelMainTankBuffer)
+                
+                # Calculate mean water level
+                meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
+                
+                print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
+                
+                # Check, if the main tank's water level is too low 
+                # and there have been at least 10 water level main tank sensor readings
+                # and the current time is within the sunrise sunset hours
+                if( (meanWaterLevelMainTank < 60) and (waterLevelMainTankUpdates > 10) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1)):
+                    
+                    # Turn water refill pump on
+                    gpio.pumpWater.value = 0.2
+                    
+                    print("Water refill pump turned on")
+                    
+                    waterLevelMainTankUpdates = 0
+                    
+                # Turn water refill pump off
+                else:
+                    gpio.pumpWater.off()
+                    
                 
                 # Check, if pH sensing is switched on 
                 if(userInput.pHmeasureState == True):
@@ -236,16 +291,116 @@ def main():
                 # PH sensing is switched off
                 else:
                     # Turn pH sensor circuit off
-                    gpio.transistorPH.on()                                                            
+                    gpio.transistorPH.on()                      
                 
+                # Check, if LEDs are switched on
+                if (userInput.ledState == True):
+                    
+                    # Get current time
+                    now = datetime.now()
+                    
+                    
+                    # Transform current time into timedelta (of that day)
+                    now = timedelta(hours = now.hour, minutes = now.minute)
+                    print(now)
+                    
+                    # If current time is between sunrise and sunset
+                    if( (now > userInput.sunrise) and (now < userInput.sunset) ):    
+                        
+                        print("Current time is between sunrise and sunset")                                        
+                    
+                        # If LEDs are set to auto adjust
+                        if (userInput.autoLedState == True):
+                            
+                            # Calculate LED intensity from visibleLight value
+                            ledIntensity = 1 - (visibleLight / 1000 / 15)
+                            
+                            # Set LED intensity
+                            gpio.leds13.value = ledIntensity
+                            gpio.leds15.value = ledIntensity
+                            
+                            print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
+                        
+                        # No auto adjust
+                        else:
+                            # Turn LEDs on
+                            gpio.leds13.value = 0.5
+                            gpio.leds15.value = 0.5
+                            
+                            print("Turned 1:3 LEDs to {0} % and 1:5 LEDs to {1} %".format(gpio.leds13.value*100, gpio.leds15.value*100))
+                            
+                    # Current time not between sunrise and sunset
+                    else:
+                        # Turn LEDs off
+                        gpio.leds13.off()
+                        gpio.leds15.off()
+                        
+                        print("LEDs switched off")
+                    
+                # LEDs not switched on
+                else: 
+                    # Turn LEDs off
+                    gpio.leds13.off()
+                    gpio.leds15.off()
+                    
+                    print("LEDs switched off")
+                    
+                                        
+                # Check, if the LED Up button is being pressed
+                while (userInput.ledUp == True):
+                    
+                    gpio.ledUp.value = 0.1
+                    print("Moving the LEDs up with {} % power".format(gpio.ledUp.value*100))
+                    
+                    time.sleep(0.1)
+                    
+                    # Check userInput data
+                    userInput = database.getUserInput()                                          
+                    
+                # Button not pressed
+                else:                    
+                    gpio.ledUp.off()
+                    print("LED upward movement stopped")
+                    
+                
+                # Check, if the LED Down button is being pressed    
+                while (userInput.ledDown == True):
+                    
+                    gpio.ledDown.value = 0.1                
+                    print("Moving the LEDs up with {} % power".format(gpio.ledDown.value*100))
+                    
+                    time.sleep(0.1)
+                    
+                    # Check userInput data
+                    userInput = database.getUserInput()                                    
+                    
+                # Button not pressed
+                else:
+                    gpio.ledDown.off()
+                    print("LED downward movement stopped")
+
 
             # System is switched off
             else:                
+                # Turn pH sensor circuit off
+                gpio.transistorPH.on()  
+                    
+                # Turn the LEDs off
+                gpio.leds13.off()
+                gpio.leds15.off()
+                
+                print("LEDs switched off")
+                
+                # Turn the circulation pump off
+                gpio.pumpCirculation.off()
+                
+                print("Turning the circulation pump off")
+                
                 # Turn the circuits off
                 gpio.transistor5V.on()
                 gpio.transistor3V3.on()
                 
-                print("All power circuits turned off")
+                print("3.3 V and 5 V power circuits turned off")
                 
                 time.sleep(0.1)
                 
