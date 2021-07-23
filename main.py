@@ -110,6 +110,12 @@ def main():
     # Number of tank level updates
     waterLevelMainTankUpdates = 0
     
+    # EC level buffer
+    ecLevelBuffer = [1.2] * 10
+    
+    # Number of EC level updates
+    ecLevelUpdates = 0
+    
     # Initialize nutrient matrix
     nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],
                      [1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -233,14 +239,28 @@ def main():
                 print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
                 print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
                 
-                # Update database
-                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, 0, waterLevelMainTank)        
-                         
                 
-                # Check, if it is noon to adapt the main water tank's level
+                # EC level
                 
-                # Get current time
-                now = datetime.now()
+                # Read EC level
+                ecLevel = 1.2
+                
+                # Set first value of buffer                
+                ecLevelBuffer[0] = ecLevel
+                ecLevelUpdates += 1
+                
+                # Rotate buffer
+                ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
+                
+                print(ecLevelBuffer)
+                
+                # Calculate mean water level
+                meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)   
+                
+                print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                  
+                                
+                
+                # Water level main tank
                 
                 # Set first value of buffer                
                 waterLevelMainTankBuffer[0] = waterLevelMainTank
@@ -256,6 +276,15 @@ def main():
                 
                 print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
                 
+                
+                # Update database
+                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, meanECLevel, meanWaterLevelMainTank)  
+                
+                
+                # Get current time
+                now = datetime.now()
+                
+                
                 # Check, if the main tank's water level is too low 
                 # and there have been at least 10 water level main tank sensor readings
                 # and the current time is within the sunrise sunset hours
@@ -265,6 +294,8 @@ def main():
                     gpio.pumpWater.value = 0.2
                     
                     print("Water refill pump turned on")
+                    
+                    time.sleep(0.5)
                     
                     waterLevelMainTankUpdates = 0
                     
@@ -378,7 +409,32 @@ def main():
                 else:
                     gpio.ledDown.off()
                     print("LED downward movement stopped")
-
+                    
+                    
+                # EC level adaption     
+                # if( (meanECLevel < 60) and (waterLevelMainTankUpdates > 10) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1)):
+                
+                # Get current time as date object
+                now = datetime.now().date()
+                
+                # Calculate current week number
+                elapsed = now - userInput.plantingDate
+                elapsed_weeks = int(elapsed.days / 7)
+                
+                print("Elapsed days since planting: {}".format(elapsed.days))
+                print("Elapsed weeks since planting: {}".format(elapsed_weeks))
+                
+                # Time inside nutrient table
+                if (elapsed_weeks < 9):
+                    
+                    print("EC level desired: {}".format(nutrientTable[3][elapsed_weeks]))
+                    
+                    if()
+                          
+                # Check, if the main tank's water level is too low 
+                # and there have been at least 10 water level main tank sensor readings
+                # and the current time is within the sunrise sunset hours                                                
+    
 
             # System is switched off
             else:                
