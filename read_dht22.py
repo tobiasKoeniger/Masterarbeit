@@ -85,7 +85,7 @@ def main():
 			# Try to run the loop
 			try:
 
-				print("*Reading sensors")
+				print("*Reading DHT22")
 				[humidity, temperature] = dht22.getValues()
 				print("********************************************************************************************")
 				print("*success*")

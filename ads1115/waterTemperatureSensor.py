@@ -22,7 +22,9 @@ class WaterTemperatureSensor:
 		chan = AnalogIn(self.ads, ADS.P0)
 		
 		# resistance in kohm
-		resistance = (chan.voltage * 10) / (3.3 - chan.voltage)
+		supplyVoltage = 2.843
+		
+		resistance = (chan.voltage * 10) / (supplyVoltage - chan.voltage)
 		
 		# temperature
 		waterTemperature = self.steinhart_temperature_C(resistance*1000)

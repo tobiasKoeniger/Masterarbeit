@@ -275,3 +275,33 @@
         
         # if()
         
+        
+        
+        
+        
+        
+# temperature = 0
+# humidity = 0
+
+# Thread
+
+# def dht22reading(dht22):
+    
+    # while(True):
+        
+        # # Read the humidity and temperature values from the DHT22
+        # global temperature
+        # global humidity
+        
+        # print("Reading sensors")
+        # [humidity, temperature] = dht22.getValues()
+        # print ("Humidity: {:.1f} %".format(humidity) )
+        # print ("Temperature: {:.1f} °C".format(temperature) )
+        
+        
+        
+        
+            # # DHT22: temperature and humidity
+    # print("Temperature and humidity sensor init.. ", end = '')
+    # dht22 = DHT22()
+    # print("successful")

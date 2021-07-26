@@ -25,6 +25,8 @@ from lightSensor import LightSensor
 from waterTemperatureSensor import WaterTemperatureSensor
 from distanceSensor import DistanceSensor
 from pHsensor import PHsensor
+# from ecSensor import EcSensor
+
 
 # Load expander class
 from gpioExpander import GPIOExpander
@@ -37,24 +39,6 @@ from gpio import GPIO
 
 # Load database class
 from database import Database
-
-# temperature = 0
-# humidity = 0
-
-# Thread
-
-def dht22reading(dht22):
-    
-    while(True):
-        
-        # Read the humidity and temperature values from the DHT22
-        global temperature
-        global humidity
-        
-        print("Reading sensors")
-        [humidity, temperature] = dht22.getValues()
-        print ("Humidity: {:.1f} %".format(humidity) )
-        print ("Temperature: {:.1f} °C".format(temperature) )
 
 
 # Begin of main program
@@ -77,10 +61,6 @@ def main():
     print()
     
     
-    global humidity
-    global temperature
-    
-    
     # Initialize classes
     
     # Initialize the GPIO class
@@ -101,11 +81,6 @@ def main():
     
     # Now, initialize all sensor classes
     
-    # # DHT22: temperature and humidity
-    # print("Temperature and humidity sensor init.. ", end = '')
-    # dht22 = DHT22()
-    # print("successful")
-    
     # Light sensor
     print("Light sensor init.. ", end = '')
     lightSensor = LightSensor()
@@ -125,6 +100,11 @@ def main():
     print("PH sensor init.. ", end = '')
     pHsensor = PHsensor()
     print("successful")
+    
+    # EC sensor
+    # print("EC sensor init.. ", end = '')
+    # ecsensor = EcSensor()
+    # print("successful")
     
     
     # Initialize main tank's water level buffer
@@ -280,7 +260,10 @@ def main():
                 # EC level
                 
                 # Read EC level
+                # ecLevel = ecsensor.getEC()
                 ecLevel = 1.2
+                print("EC level: {}".format(ecLevel))
+                # ecLevel = 1.2
                 
                 # Set first value of buffer                
                 ecLevelBuffer[0] = ecLevel
@@ -315,17 +298,23 @@ def main():
                 
                 
                 # Update database
-                database.updateSensors(visibleLight, waterTemperature, meanECLevel, meanWaterLevelMainTank)  
+                database.updateSensors(visibleLight, waterTemperature, meanWaterLevelMainTank)  
                 
                 
                 # Get current time
                 now = datetime.now()
                 
+                # Extract 
+                # sunrise_hour = int(userInput.sunrise.seconds / (60*60))
+                # sunset_hour = int(userInput.sunset.seconds / (60*60))
                 
+                # Transform current time into timedelta (of that day)
+                now = timedelta(hours = now.hour, minutes = now.minute)
+
                 # Check, if the main tank's water level is too low 
                 # and there have been at least 10 water level main tank sensor readings
                 # and the current time is within the sunrise sunset hours
-                if( (meanWaterLevelMainTank < 60) and (waterLevelMainTankUpdates > 10) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1)):
+                if( (meanWaterLevelMainTank < 60) and (waterLevelMainTankUpdates > 10) and (now > userInput.sunrise) and (now < userInput.sunset)):
                     
                     # Turn water refill pump on
                     gpio.pumpWater.value = 0.2
@@ -461,13 +450,19 @@ def main():
                 print("Elapsed days since planting: {}".format(elapsed.days))
                 print("Elapsed weeks since planting: {}".format(elapsed_weeks))
                 
+                # Get the current time                
+                now = datetime.now()
+                    
                 # Time inside nutrient table
                 if (elapsed_weeks < 9):
                     
                     print("EC level desired: {}".format(nutrientTable[3][elapsed_weeks]))
                     
+                    # Transform current time into timedelta (of that day)
+                    now = timedelta(hours = now.hour, minutes = now.minute)
+
                     # Is mean EC level below nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1) and (ecLevelUpdates > 10) ):
+                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 10) ):
 
                         # Adjust nutrient level            
                         # Turn each pump on for a short moment according to the nutrient table                                  
@@ -490,9 +485,8 @@ def main():
                         
                 # Time outside nutrient table
                 else:
-                    
                     # Is mean EC level below last nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][8]) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1) and (ecLevelUpdates > 10) ):                    
+                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 10) ):                    
                         
                         # Adjust nutrient level  
                         # Turn each pump on for a short moment according to the nutrient table              
@@ -549,3 +543,4 @@ def main():
 # This is the main program
 if __name__ == "__main__":
     main()
+
