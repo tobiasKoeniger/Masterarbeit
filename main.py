@@ -261,24 +261,25 @@ def main():
                 
                 # Read EC level
                 # ecLevel = ecsensor.getEC()
-                ecLevel = 1.2
+                ecLevel = database.getEC()
                 print("EC level: {}".format(ecLevel))
                 # ecLevel = 1.2
                 
-                # Set first value of buffer                
-                ecLevelBuffer[0] = ecLevel
-                ecLevelUpdates += 1
-                
-                # Rotate buffer
-                ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
-                
-                print(ecLevelBuffer)
-                
-                # Calculate mean water level
+                if (ecLevelBuffer[-1] != ecLevel):
+                    
+                    # Set first value of buffer                
+                    ecLevelBuffer[0] = ecLevel
+                    ecLevelUpdates += 1
+                    
+                    # Rotate buffer
+                    ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
+                    
+                    print(ecLevelBuffer)
+                    
+                # Calculate mean EC level
                 meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)   
                 
-                print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                  
-                                
+                print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                                                  
                 
                 # Water level main tank
                 

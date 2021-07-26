@@ -270,6 +270,37 @@ class Database:
 		
 		return self.userInput		
 		
+		
+	def getEC(self):
+		
+		self.connectToDatabase()
+		
+		# Get the database table 'userInput'
+		self.mycursor.execute("SELECT * FROM sensors")
+
+		# Fetch all entries from the table
+		result = self.mycursor.fetchall()
+
+		# Print the table
+		for x in result:
+			print(x)
+
+		# Copy the userInput data into the userInput class
+		ec_level = x[5]
+		
+		# time DATETIME,
+		# temperature DOUBLE(8, 3),
+		# humidity DOUBLE(8, 3),
+		# lightIntensity DOUBLE(8, 3),
+		# waterTemperature DOUBLE(8, 3),
+		# ecLevel DOUBLE(8, 3),
+		# phLevel DOUBLE(8, 3),
+		# waterLevel DOUBLE(8, 3)  
+		
+		self.closeConnection()
+		
+		return ec_level		
+		
 	
 	def closeConnection(self):
 		
