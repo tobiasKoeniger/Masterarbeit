@@ -16,6 +16,8 @@ from gpiozero import LED
 # MySQL library
 import mysql.connector
 
+# Threading
+# from threading import *
 
 # Load sensor classes
 from dht22 import DHT22
@@ -35,6 +37,24 @@ from gpio import GPIO
 
 # Load database class
 from database import Database
+
+# temperature = 0
+# humidity = 0
+
+# Thread
+
+def dht22reading(dht22):
+    
+    while(True):
+        
+        # Read the humidity and temperature values from the DHT22
+        global temperature
+        global humidity
+        
+        print("Reading sensors")
+        [humidity, temperature] = dht22.getValues()
+        print ("Humidity: {:.1f} %".format(humidity) )
+        print ("Temperature: {:.1f} °C".format(temperature) )
 
 
 # Begin of main program
@@ -57,6 +77,10 @@ def main():
     print()
     
     
+    global humidity
+    global temperature
+    
+    
     # Initialize classes
     
     # Initialize the GPIO class
@@ -77,10 +101,10 @@ def main():
     
     # Now, initialize all sensor classes
     
-    # DHT22: temperature and humidity
-    print("Temperature and humidity sensor init.. ", end = '')
-    dht22 = DHT22()
-    print("successful")
+    # # DHT22: temperature and humidity
+    # print("Temperature and humidity sensor init.. ", end = '')
+    # dht22 = DHT22()
+    # print("successful")
     
     # Light sensor
     print("Light sensor init.. ", end = '')
@@ -117,9 +141,9 @@ def main():
     ecLevelUpdates = 0
     
     # Initialize nutrient matrix
-    nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],
-                     [1, 1, 1, 1, 1, 1, 1, 1, 1],
-                     [1, 1, 1, 0.5, 0.5, 1, 1.5, 1.5, 1.5],
+    nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],     # FloraGro
+                     [1, 1, 1, 1, 1, 1, 1, 1, 1],               # FloraMicro
+                     [1, 1, 1, 0.5, 0.5, 1, 1.5, 1.5, 1.5],     # FloraBloom
                      [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]
     
     # GPIO expander
@@ -166,6 +190,16 @@ def main():
         sys.exit()
 
 
+    userInput = database.getUserInput()  
+    
+    # # Check, if system is switched on
+    # if (userInput.systemState == True):
+
+        # T = Thread(target=dht22reading(dht22))
+        # T.setDaemon(True)
+        # T.start()
+    
+
     # Main loop
     while True:
         
@@ -209,12 +243,15 @@ def main():
             
             
                 # Read sensors
-                
+                                
                 # Read the humidity and temperature values from the DHT22
+                
+                # threading.Thread(target=dht22reading(dht22)).start()
+                
                 print("Reading sensors")
-                [humidity, temperature] = dht22.getValues()
-                print ("Humidity: {:.1f} %".format(humidity) )
-                print ("Temperature: {:.1f} °C".format(temperature) )
+                # [humidity, temperature] = dht22.getValues()
+                # print ("Humidity: {:.1f} %".format(humidity) )
+                # print ("Temperature: {:.1f} °C".format(temperature) )
                 
                 
                 # Read the light sensor values
@@ -278,7 +315,7 @@ def main():
                 
                 
                 # Update database
-                database.updateSensors(temperature, humidity, visibleLight, waterTemperature, meanECLevel, meanWaterLevelMainTank)  
+                database.updateSensors(visibleLight, waterTemperature, meanECLevel, meanWaterLevelMainTank)  
                 
                 
                 # Get current time
@@ -429,11 +466,51 @@ def main():
                     
                     print("EC level desired: {}".format(nutrientTable[3][elapsed_weeks]))
                     
-                    if()
-                          
-                # Check, if the main tank's water level is too low 
-                # and there have been at least 10 water level main tank sensor readings
-                # and the current time is within the sunrise sunset hours                                                
+                    # Is mean EC level below nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
+                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1) and (ecLevelUpdates > 10) ):
+
+                        # Adjust nutrient level            
+                        # Turn each pump on for a short moment according to the nutrient table                                  
+                        gpio.pumpFloraGro.value = 0.2
+                        time.sleep(nutrientTable[1][elapsed_weeks]) 
+                        gpio.pumpFloraGro.off()
+                        
+                        gpio.pumpFloraMicro.value = 0.2
+                        time.sleep(nutrientTable[2][elapsed_weeks]) 
+                        gpio.pumpFloraMicro.off()
+                        
+                        gpio.pumpFloraBloom.value = 0.2                                                
+                        time.sleep(nutrientTable[3][elapsed_weeks]) 
+                        gpio.pumpFloraBloom.off()   
+                        
+                        ecLevelUpdates = 0                     
+                        
+                        print("Nutrients refilled")
+                                                                  
+                        
+                # Time outside nutrient table
+                else:
+                    
+                    # Is mean EC level below last nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
+                    if( (meanECLevel < nutrientTable[3][8]) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1) and (ecLevelUpdates > 10) ):                    
+                        
+                        # Adjust nutrient level  
+                        # Turn each pump on for a short moment according to the nutrient table              
+                        gpio.pumpFloraGro.value = 0.2
+                        time.sleep(nutrientTable[1][8]) 
+                        gpio.pumpFloraGro.off()
+                        
+                        gpio.pumpFloraMicro.value = 0.2
+                        time.sleep(nutrientTable[2][8]) 
+                        gpio.pumpFloraMicro.off()
+                        
+                        gpio.pumpFloraBloom.value = 0.2                                                
+                        time.sleep(nutrientTable[3][8]) 
+                        gpio.pumpFloraBloom.off()  
+                        
+                        ecLevelUpdates = 0
+                        
+                        print("Nutrients refilled")
     
 
             # System is switched off

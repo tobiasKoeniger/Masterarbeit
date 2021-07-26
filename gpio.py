@@ -11,9 +11,9 @@ class GPIO:
 	transistor3V3 = LED(26)
 	transistorPH = LED(6)
 	
-	pumpFloraMicro = PWMLED(23)
 	pumpFloraGro = PWMLED(24)
 	pumpFloraBloom = PWMLED(25)
+	pumpFloraMicro = PWMLED(23)
 	pumpFloraClean = PWMLED(17)
 	
 	pumpPHdowner = PWMLED(27)
@@ -98,3 +98,4 @@ class GPIO:
 		# Turn the 1:5 LEDs off
 		self.leds15.off()
 		print("1:5 LEDs turned off")
+

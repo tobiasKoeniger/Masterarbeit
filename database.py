@@ -164,7 +164,29 @@ class Database:
 		self.mycursor = self.mydb.cursor()
 			
 			
-	def updateSensors(self, temperature, humidity, visibleLight, waterTemperature, ec, distance1):
+	def updateSensors(self, visibleLight, waterTemperature, ec, distance1):
+		
+		self.connectToDatabase()
+		
+		# Update the sensor data in the database table 'sensors'
+					
+		sql = """UPDATE sensors SET 
+					time = NOW(), 
+					lightIntensity = %s, 
+					waterTemperature = %s,
+					ecLevel = %s,					
+					waterLevel = %s"""
+
+		data = (visibleLight, waterTemperature, ec, distance1)            
+
+		self.mycursor.execute(sql, data)
+
+		self.mydb.commit()   
+		
+		self.closeConnection()
+		
+	
+	def updateDHT22(self, temperature, humidity):
 		
 		self.connectToDatabase()
 		
@@ -173,19 +195,15 @@ class Database:
 		sql = """UPDATE sensors SET 
 					time = NOW(), 
 					temperature = %s, 
-					humidity = %s, 
-					lightIntensity = %s, 
-					waterTemperature = %s,
-					ecLevel = %s,					
-					waterLevel = %s"""
+					humidity = %s"""
 
-		data = (temperature, humidity, visibleLight, waterTemperature, ec, distance1)            
+		data = (temperature, humidity)            
 
 		self.mycursor.execute(sql, data)
 
 		self.mydb.commit()   
 		
-		self.closeConnection()
+		self.closeConnection()		
 			
 			
 	def updatePH(self, pH):
