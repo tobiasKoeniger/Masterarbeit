@@ -105,6 +105,7 @@ class EcSensor:
 		# linear correction
 		# ec = 0.642 + ( (1.59 - 0.642) / (1.36 - 0.93) ) * (ec25 - 0.93)
 		ec = 0.32 + ( (2.4 - 0.32) / (0.7746 - 0.6714) ) * (ec25 - 0.6714)
+
 		print("ec: {:.2f} mS/cm".format(ec))
 
 		print()
