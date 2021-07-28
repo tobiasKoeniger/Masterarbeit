@@ -139,9 +139,9 @@ def main():
     
     # Turn the 3.3 V circuit and pH meter off again
     # gpio.transistor5V.on()
-    gpio.transistor3V3.on()
+    # gpio.transistor3V3.on()
     gpio.transistorPH.on()
-    print("3.3 V circuit and pH meter turned off")
+    print("PH meter circuit turned off")
     
     
     print()
@@ -243,7 +243,7 @@ def main():
                 print ("Full Spectrum(IR + Visible) : {} lux".format(full_spectrum) )
                 print ("Infrared Value : {} lux".format(infrared) )
                 print ("Visible Value : {} lux".format(visibleLight) )
-                
+                # time.sleep(100)
                 
                 # Read the water temperature sensor
                 waterTemperature = waterTemperatureSensor.getTemperature()
