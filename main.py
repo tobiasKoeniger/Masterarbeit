@@ -101,6 +101,11 @@ def main():
     pHsensor = PHsensor()
     print("successful")
     
+    # DHT22: temperature and humidity
+    # print("*Temperature and humidity sensor init.. ", end = '')
+    # dht22 = DHT22()
+    # print("*successful")
+    
     # EC sensor
     # print("EC sensor init.. ", end = '')
     # ecsensor = EcSensor()
