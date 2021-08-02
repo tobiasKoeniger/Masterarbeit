@@ -9,10 +9,14 @@ import time
 
 # pumpWaterSupply.on()
 
-pumpCirculation = PWMLED(8)
+# pumpCirculation = PWMLED(8)
 
-pumpCirculation.value = 0.6
-pumpCirculation.value = 0.3
+# pumpCirculation.value = 0.6
+# pumpCirculation.value = 0.3
+
+pumpCirculation = PWMLED(12)
+
+pumpCirculation.value = 1
 
 time.sleep(10000)
 
