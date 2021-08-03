@@ -81,6 +81,13 @@ def main():
     
     # Now, initialize all sensor classes
     
+    # GPIO expander
+    # The expander is not needed, but can be used to add more 
+    # components to the system.
+    print("GPIO expander init.. ", end = '')
+    gpioExpander = GPIOExpander() 
+    print("successful")
+    
     # Light sensor
     print("Light sensor init.. ", end = '')
     lightSensor = LightSensor()
@@ -130,13 +137,7 @@ def main():
                      [1, 1, 1, 1, 1, 1, 1, 1, 1],               # FloraMicro
                      [1, 1, 1, 0.5, 0.5, 1, 1.5, 1.5, 1.5],     # FloraBloom
                      [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]
-    
-    # GPIO expander
-    # The expander is not needed, but can be used to add more 
-    # components to the system.
-    # print("GPIO expander init.. ", end = '')
-    # gpioExpander = GPIOExpander() 
-    # print("successful")
+        
     
     # # userInput class to store user input data 
     # userInput = UserInput()

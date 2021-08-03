@@ -54,18 +54,17 @@ def cleanAndExit():
 # to 7 for the GP0...GP7 pins.  For the MCP23017 you specify a pin number from
 # 0 to 15 for the GPIOA0...GPIOA7, GPIOB0...GPIOB7 pins (i.e. pin 12 is GPIOB4).
 pinA0 = mcp.get_pin(0)
-pinA1 = mcp.get_pin(1)
-pinA2 = mcp.get_pin(2)
-pinA3 = mcp.get_pin(3)
+# pinA1 = mcp.get_pin(1)
+# pinA2 = mcp.get_pin(2)
+# pinA3 = mcp.get_pin(3)
 
-pinValue = False
+pinValue = True
 
 # Setup pin0 as an output that's at a high logic level.
 pinA0.switch_to_output(value=pinValue)
-pinA1.switch_to_output(value=pinValue)
-pinA2.switch_to_output(value=pinValue)
-pinA3.switch_to_output(value=pinValue)
-	
+# pinA1.switch_to_output(value=pinValue)
+# pinA2.switch_to_output(value=pinValue)
+# pinA3.switch_to_output(value=pinValue)
 	
 
 while True:
