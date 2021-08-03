@@ -6,10 +6,7 @@ import digitalio
 from adafruit_mcp230xx.mcp23017 import MCP23017
 
 
-class GPIOExpander:
-	
-	# weightSensors = [ [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1] ];
-	# weightSensors = [ [False, False, False], [False, False, True], [False, True, False], [False, True, True], [True, False, False], [True, False, True] ]
+class GPIOExpander:	
 	
 	def __init__(self):
 		
@@ -33,37 +30,25 @@ class GPIOExpander:
 		self.pin.append(self.mcp.get_pin(6))
 		
 		
-		self.pin[0].switch_to_output(value = False) 
-		self.pin[1].switch_to_output(value = True) 
+		self.pin[0].switch_to_output(value = True) 
+		self.pin[1].switch_to_output(value = False) 
 		self.pin[2].switch_to_output(value = False) 
 		self.pin[3].switch_to_output(value = False) 
 		self.pin[4].switch_to_output(value = False) 
 		self.pin[5].switch_to_output(value = False) 
 		self.pin[6].switch_to_output(value = False) 
 		
-		# # Initialize all Pins as Outputs and False 
-		# self.pinA0.switch_to_output(value = True) 
 		
-		# self.pin[0] = self.mcp.get_pin(0)
-		# self.pin[1] = self.mcp.get_pin(1)
-		# self.pin[2] = self.mcp.get_pin(2)
+	# def setOutput(self, output_pin_number, pin_state):
 		
-		# Initialize all Pins as Outputs and False 
-		# self.pin[3].switch_to_output(value = False) # False = enable enable pin
-		
-		# self.pin[0].switch_to_output(value = weightSensors[0][0])
-		# self.pin[1].switch_to_output(value = weightSensors[0][1])
-		# self.pin[2].switch_to_output(value = weightSensors[0][2])
+		# self.pin[output_pin_number].value = pin_state
 		
 		
-	def setOutput(self, output_pin_number, pin_state):
+	def setSensor(self, sensor_number):
 		
-		self.pin[output_pin_number].value = pin_state
-		
-		
-	def enableWeightSensor(self, weightSensorNumber):
-		
-		pass
-		
-	
-		
+		for sensor in self.pin:
+			sensor.value = False
+			
+		self.pin[sensor_number].value = True
+			
+

@@ -14,9 +14,9 @@ import time
 # pumpCirculation.value = 0.6
 # pumpCirculation.value = 0.3
 
-pumpCirculation = PWMLED(12)
+pumpCirculation = PWMLED(8)
 
-pumpCirculation.value = 1
+pumpCirculation.value = 0.5
 
 time.sleep(10000)
 

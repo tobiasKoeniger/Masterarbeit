@@ -81,9 +81,7 @@ def main():
     
     # Now, initialize all sensor classes
     
-    # GPIO expander
-    # The expander is not needed, but can be used to add more 
-    # components to the system.
+    # GPIO expander    
     print("GPIO expander init.. ", end = '')
     gpioExpander = GPIOExpander() 
     print("successful")
@@ -222,6 +220,16 @@ def main():
                 
                 time.sleep(0.1)
                 # time.sleep(100)
+                
+                # Set main tank level sensor
+                gpioExpander.setSensor(0)
+                
+                time.sleep(0.1)
+                
+                # Reinitialize sensor
+                mainTankLevelSensor = DistanceSensor()
+                print("Main tank sensor reinitialized")
+                
                 
                 # Turn the circulation pump on
                 gpio.pumpCirculation.value = 0.5
