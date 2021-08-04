@@ -232,7 +232,7 @@ def main():
                 
                 
                 # Turn the circulation pump on
-                gpio.pumpCirculation.value = 0.5
+                gpio.pumpCirculation.value = 0.3
                 print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
             
             
@@ -387,11 +387,27 @@ def main():
                             # Calculate LED intensity from visibleLight value
                             ledIntensity = 1 - (visibleLight / 1000 / 15)
                             
-                            # Set LED intensity
-                            gpio.leds13.value = ledIntensity
-                            gpio.leds15.value = ledIntensity
+                            if(abs(gpio.leds13.value - ledIntensity) > 0.05):
                             
-                            print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
+                                while ((ledIntensity - gpio.leds13.value) > 0.005):                            
+                                
+                                    gpio.leds13.value += 0.001
+                                    gpio.leds15.value += 0.001
+                                    
+                                    time.sleep(0.001)
+                                    
+                                while ((gpio.leds13.value - ledIntensity) > 0.005):                            
+                                
+                                    gpio.leds13.value -= 0.001
+                                    gpio.leds15.value -= 0.001
+                                    
+                                    time.sleep(0.001)
+                                    
+                                # Set LED intensity
+                                # gpio.leds13.value = ledIntensity
+                                # gpio.leds15.value = ledIntensity
+                                
+                                print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
                         
                         # No auto adjust
                         else:

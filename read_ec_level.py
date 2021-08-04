@@ -16,7 +16,7 @@ import mysql.connector
 from database import Database
 
 # Load gpio class
-from gpio import GPIO
+# from gpio import GPIO
 
 import time
 
@@ -40,13 +40,14 @@ def main():
 
 
     # Initialize the GPIO class
-    print("*GPIO init.. ", end = '\n\n')
-    gpio = GPIO()
+    print("*GPIO init.. ", end = '\n\n')    
+    transistor5V = LED(16)
+    transistor3V3 = LED(26)
 
 
     # Turn the circuits on for initialization
-    gpio.transistor3V3.off()
-    gpio.transistor5V.off()
+    transistor3V3.off()
+    transistor5V.off()
     print("*3.3 V amd 5 V circuit turned on")
 
     time.sleep(0.1)
@@ -103,7 +104,7 @@ def main():
             except (KeyboardInterrupt, SystemExit):
                 cleanAndExit()
                 
-            time.sleep(3)
+            time.sleep(60)
             
         # System is switched off
         else:  

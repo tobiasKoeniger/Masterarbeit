@@ -17,7 +17,7 @@ from dht22 import DHT22
 from database import Database
 
 # Load gpio class
-from gpio import GPIO
+# from gpio import GPIO
 
 import time
 
@@ -41,10 +41,11 @@ def main():
 	
 	# Initialize the GPIO class
 	print("*GPIO init.. ", end = '\n\n')
-	gpio = GPIO()
+	# gpio = GPIO()
+	transistor3V3 = LED(26)
 
 	# Turn the circuits on for initialization
-	gpio.transistor3V3.off()
+	transistor3V3.off()
 	print("*3 V circuit turned on")
 
 	time.sleep(0.1)
