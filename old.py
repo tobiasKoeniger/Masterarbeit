@@ -305,3 +305,71 @@
     # print("Temperature and humidity sensor init.. ", end = '')
     # dht22 = DHT22()
     # print("successful")
+    
+    
+    
+    
+    
+    # # Detect plant height
+                    # gpioExpander.setSensor(7)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance1 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 1: {0} mm".format(distance1) ) 
+                    
+                    
+                    # gpioExpander.setSensor(8)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance2 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 2: {0} mm".format(distance2) ) 
+                    
+                    
+                    # gpioExpander.setSensor(9)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance3 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 3: {0} mm".format(distance3) ) 
+                    
+                    
+                    
+                    
+                                        
+                    # # Detect plant height
+                    # gpioExpander.setSensor(7)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance1 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 1: {0} mm".format(distance1) ) 
+                    
+                    
+                    # gpioExpander.setSensor(8)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance2 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 2: {0} mm".format(distance2) ) 
+                    
+                    
+                    # gpioExpander.setSensor(9)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance3 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 3: {0} mm".format(distance3) ) 
