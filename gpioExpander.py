@@ -28,6 +28,9 @@ class GPIOExpander:
 		self.pin.append(self.mcp.get_pin(4))
 		self.pin.append(self.mcp.get_pin(5))
 		self.pin.append(self.mcp.get_pin(6))
+		self.pin.append(self.mcp.get_pin(7))
+		self.pin.append(self.mcp.get_pin(8))
+		self.pin.append(self.mcp.get_pin(9))
 		
 		
 		self.pin[0].switch_to_output(value = True) 
@@ -37,6 +40,9 @@ class GPIOExpander:
 		self.pin[4].switch_to_output(value = False) 
 		self.pin[5].switch_to_output(value = False) 
 		self.pin[6].switch_to_output(value = False) 
+		self.pin[7].switch_to_output(value = False) 
+		self.pin[8].switch_to_output(value = False) 
+		self.pin[9].switch_to_output(value = False) 
 		
 		
 	# def setOutput(self, output_pin_number, pin_state):

@@ -183,6 +183,9 @@ def main():
         # T.setDaemon(True)
         # T.start()
     
+    
+    start_up = True
+    
 
     # Main loop
     while True:
@@ -270,6 +273,116 @@ def main():
                 print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
                 print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
                 
+                
+                # Detect plant height
+                
+                current_time = datetime.now()
+                # print(current_time)
+                
+                if(start_up == True):
+                    
+                    # # Detect plant height
+                    # gpioExpander.setSensor(7)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance1 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 1: {0} mm".format(distance1) ) 
+                    
+                    
+                    # gpioExpander.setSensor(8)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance2 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 2: {0} mm".format(distance2) ) 
+                    
+                    
+                    # gpioExpander.setSensor(9)
+                    # time.sleep(0.1)
+                    
+                    # # Reinitialize sensor
+                    # distance_sensor = DistanceSensor()
+                    
+                    # distance3 = distance_sensor.getDistance()
+                    # print ("Distance plant height sensor 3: {0} mm".format(distance3) ) 
+                    
+                    
+                    last_plantHeight_detection = datetime.now()
+                    
+                    last_tankLevel_detection = datetime.now() 
+                    
+                    start_up = False                                                
+                    
+                    
+                time_delta_plantHeight = current_time - last_plantHeight_detection
+            
+                print(time_delta_plantHeight.seconds)
+                
+                if(time_delta_plantHeight.seconds > 60*60):
+                    
+                    # Detect plant height
+                    gpioExpander.setSensor(7)
+                    time.sleep(0.1)
+                    
+                    # Reinitialize sensor
+                    distance_sensor = DistanceSensor()
+                    
+                    distance1 = distance_sensor.getDistance()
+                    print ("Distance plant height sensor 1: {0} mm".format(distance1) ) 
+                    
+                    
+                    gpioExpander.setSensor(8)
+                    time.sleep(0.1)
+                    
+                    # Reinitialize sensor
+                    distance_sensor = DistanceSensor()
+                    
+                    distance2 = distance_sensor.getDistance()
+                    print ("Distance plant height sensor 2: {0} mm".format(distance2) ) 
+                    
+                    
+                    gpioExpander.setSensor(9)
+                    time.sleep(0.1)
+                    
+                    # Reinitialize sensor
+                    distance_sensor = DistanceSensor()
+                    
+                    distance3 = distance_sensor.getDistance()
+                    print ("Distance plant height sensor 3: {0} mm".format(distance3) ) 
+                    
+                    
+                    last_plantHeight_detection = datetime.now()
+                    
+                    start_up = False
+                    
+                    
+                # Detect tank levels
+                time_delta_tankLevel = current_time - last_tankLevel_detection
+                
+                if(time_delta_tankLevel.seconds > 60*60):
+                    
+                    for i in range(1, 7):
+                        
+                        # Detect plant height
+                        gpioExpander.setSensor(i)
+                        time.sleep(0.1)
+                        
+                        # Reinitialize sensor
+                        distance_sensor = DistanceSensor()
+                        
+                        distance = distance_sensor.getDistance()
+                        print ("Tank level sensor {0}: {1} mm".format(i, distance) ) 
+                                        
+                                        
+                    last_tankLevel_detection = datetime.now()
+                    
+                    start_up = False
+                    
                 
                 # EC level
                 
