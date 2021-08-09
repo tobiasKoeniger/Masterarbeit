@@ -287,9 +287,9 @@ def main():
                     
                     start_up = False                
                     
-                    plant_heights = []  
+                    plant_heights = [0, 0, 0]  
                     
-                    tank_levels = []                              
+                    tank_levels = [0, 0, 0, 0, 0, 0]                              
                     
                     
                 time_delta_plantHeight = current_time - last_plantHeight_detection
@@ -298,7 +298,7 @@ def main():
                 
                 
                 # Detect plant height
-                if(time_delta_plantHeight.seconds > 60*60):
+                if(time_delta_plantHeight.seconds > 60): # 60*60
                     
                     for i in range(7, 10):
                         
@@ -306,12 +306,20 @@ def main():
                         gpioExpander.setSensor(i)
                         time.sleep(0.1)
                         
+                        # try:
+                            # distance_sensor
+                        # except NameError:
+                            # pass
+                        # else: 
+                            # del distance_sensor
+                            # print("deleted")
+                        
                         # Reinitialize sensor
                         distance_sensor = DistanceSensor()                        
                         
                         distance = distance_sensor.getDistance()
                         
-                        plant_heights.append(distance)
+                        plant_heights[i - 7] = distance
                         
                         print ("Distance plant height sensor {0}: {1} mm".format((i-6), plant_heights[i - 7]) ) 
                     
@@ -335,7 +343,7 @@ def main():
                 # Detect tank levels
                 time_delta_tankLevel = current_time - last_tankLevel_detection
                 
-                if(time_delta_tankLevel.seconds > 60*60):
+                if(time_delta_tankLevel.seconds > 60*60): # 60*60
                     
                     for i in range(1, 7):
                         
@@ -348,7 +356,7 @@ def main():
                         
                         distance = distance_sensor.getDistance()
                         
-                        tank_levels.append(distance)
+                        tank_levels[i - 1] = distance
                         
                         print ("Tank level sensor {0}: {1} mm".format((i), tank_levels[i - 1]) ) 
                                         
@@ -377,36 +385,36 @@ def main():
                 # Transform current time into timedelta (of that day)
                 now = timedelta(hours = now.hour, minutes = now.minute)
                 
-                # if ((now > userInput.sunrise) and (now < userInput.sunset) and (userInput.autoHeightAdaptionState == True)):
+                if ((now > userInput.sunrise) and (now < userInput.sunset) and (userInput.autoHeightAdaptionState == True)):
                     
-                    # while ((plant_heights[0] < 500) or (plant_heights[1] < 500) or (plant_heights[2] < 500)):
+                    while ((plant_heights[0] < 500) or (plant_heights[1] < 500) or (plant_heights[2] < 500)):
                         
-                        # # Adjust LED height
-                        # gpio.ledUp.value = 0.1
-                        # print("Moving the LEDs up with {} % power".format(gpio.ledUp.value*100))
+                        # Adjust LED height
+                        gpio.ledUp.value = 0.15
+                        print("Moving the LEDs up with {} % power".format(gpio.ledUp.value*100))
+                        
+                        time.sleep(0.1)
+                        
+                        # Check sensors again
+                        for i in range(7, 10):
+                        
+                            # Detect plant height
+                            gpioExpander.setSensor(i)
+                            time.sleep(0.1)
+                            
+                            # Reinitialize sensor
+                            distance_sensor = DistanceSensor()                        
+                            
+                            distance = distance_sensor.getDistance()
+                            
+                            plant_heights[i - 7] = distance
+                            
+                            print ("Distance plant height sensor {0}: {1} mm".format((i-6), plant_heights[i - 7]) ) 
                         
                         # time.sleep(0.1)
                         
-                        # # Check sensors again
-                        # for i in range(7, 10):
-                        
-                            # # Detect plant height
-                            # gpioExpander.setSensor(i)
-                            # time.sleep(0.1)
-                            
-                            # # Reinitialize sensor
-                            # distance_sensor = DistanceSensor()                        
-                            
-                            # distance = distance_sensor.getDistance()
-                            
-                            # plant_heights[i - 7] = distance
-                            
-                            # print ("Distance plant height sensor {0}: {1} mm".format((i-6), plant_heights[i - 7]) ) 
-                        
-                        # # time.sleep(0.1)
-                        
-                    # gpio.ledUp.off()
-                    # print("LED upward movement stopped")                                                
+                    gpio.ledUp.off()
+                    print("LED upward movement stopped")                                                
                         
                 
                 # EC level
@@ -571,39 +579,65 @@ def main():
                     
                     print("LEDs switched off")
                     
+                    
+                led_movement_was_on = False
                                         
                 # Check, if the LED Up button is being pressed
                 while (userInput.ledUp == True):
                     
-                    gpio.ledUp.value = 0.1
+                    gpio.ledUp.value = 1
                     print("Moving the LEDs up with {} % power".format(gpio.ledUp.value*100))
                     
-                    time.sleep(0.1)
+                    time.sleep(0.5)
                     
                     # Check userInput data
-                    userInput = database.getUserInput()                                          
+                    userInput = database.getUserInput()     
+                    
+                    led_movement_was_on = True                                     
                     
                 # Button not pressed
                 else:                    
                     gpio.ledUp.off()
                     print("LED upward movement stopped")
                     
+                    if (led_movement_was_on == True):
+                        
+                        time.sleep(0.5)
+                        
+                        # Reinitialize sensor
+                        mainTankLevelSensor = DistanceSensor()
+                        print("Main tank sensor reinitialized")
+                        
+                        led_movement_was_on = False
+                    
                 
                 # Check, if the LED Down button is being pressed    
                 while (userInput.ledDown == True):
                     
-                    gpio.ledDown.value = 0.1                
+                    gpio.ledDown.value = 1                
                     print("Moving the LEDs up with {} % power".format(gpio.ledDown.value*100))
                     
-                    time.sleep(0.1)
+                    time.sleep(0.5)
                     
                     # Check userInput data
-                    userInput = database.getUserInput()                                    
+                    userInput = database.getUserInput()                
+                    
+                    led_movement_was_on = True                    
                     
                 # Button not pressed
                 else:
                     gpio.ledDown.off()
                     print("LED downward movement stopped")
+                    
+                    if (led_movement_was_on == True):
+                        
+                        time.sleep(0.5)
+                        
+                        # Reinitialize sensor
+                        mainTankLevelSensor = DistanceSensor()
+                        print("Main tank sensor reinitialized")
+                        
+                        led_movement_was_on = False
                     
                     
                 # EC level adaption     

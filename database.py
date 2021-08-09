@@ -49,10 +49,20 @@ class Database:
 
 
 		self.mycursor = self.mydb.cursor()
+		
+		
+		# # Insert one data row with default values
+		# sql = "DROP DATABASE hydroponics"
+		# self.mycursor.execute(sql)
+
+		# self.mydb.commit()
+		
     
 		# Fetch all database names
 		self.mycursor.execute("SHOW DATABASES")
 		databaseNames = self.mycursor.fetchall()
+		
+		
 		
 		# Check if database 'hydroponics' is available
 		if not 'hydroponics' in str(databaseNames):
@@ -140,6 +150,15 @@ class Database:
 			self.mycursor.execute(sql)
 
 			self.mydb.commit()
+
+		# Debugging
+			
+		# # Insert one data row with default values
+		# sql = "INSERT INTO userInput VALUES (NOW(), FALSE, FALSE, FALSE, TRUE, '08:00:00', '20:00:00', TRUE, CURDATE(), FALSE, FALSE)"
+		# self.mycursor.execute(sql)
+
+		# self.mydb.commit()
+
 			
 		self.closeConnection()
 		
