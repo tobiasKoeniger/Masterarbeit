@@ -84,6 +84,7 @@ def main():
     # GPIO expander    
     print("GPIO expander init.. ", end = '')
     gpioExpander = GPIOExpander() 
+    gpioExpander.setSensor(0)
     print("successful")
     
     # Light sensor
@@ -166,6 +167,8 @@ def main():
         # GPIO.cleanup()
         
         database.closeConnection()
+        
+        gpioExpander.cleanClose()
             
         print("Bye!")
         print("\n")
@@ -272,7 +275,7 @@ def main():
                 waterLevelMainTank = 250 - distance
                 print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
                 print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
-                
+                # time.sleep(100)
                 
                 # Detect plant height and tank levels
                 
@@ -296,6 +299,10 @@ def main():
             
                 print(time_delta_plantHeight.seconds)
                 
+                if(time_delta_plantHeight.seconds == 86399):
+                    
+                    print("\nInitial sensor init")
+                    print("-------------------")
                 
                 # Detect plant height
                 if(time_delta_plantHeight.seconds > 60): # 60*60
@@ -313,7 +320,7 @@ def main():
                         # else: 
                             # del distance_sensor
                             # print("deleted")
-                        
+                        # time.sleep(100)
                         # Reinitialize sensor
                         distance_sensor = DistanceSensor()                        
                         
@@ -375,7 +382,13 @@ def main():
                     mainTankLevelSensor = DistanceSensor()
                     print("Main tank sensor reinitialized")
                     
+                   
+                   
+                if(time_delta_plantHeight.seconds == 86399):
                     
+                    print("Sensor init finished")
+                    print("--------------------\n")
+                   
                     
                 # Auto Adjust LED height 
                 

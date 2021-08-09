@@ -33,7 +33,7 @@ class GPIOExpander:
 		self.pin.append(self.mcp.get_pin(9))
 		
 		
-		self.pin[0].switch_to_output(value = True) 
+		self.pin[0].switch_to_output(value = False) 
 		self.pin[1].switch_to_output(value = False) 
 		self.pin[2].switch_to_output(value = False) 
 		self.pin[3].switch_to_output(value = False) 
@@ -56,5 +56,10 @@ class GPIOExpander:
 			sensor.value = False
 			
 		self.pin[sensor_number].value = True
-			
+		
+		
+	def cleanClose(self):
+		
+		for sensor in self.pin:
+			sensor.value = False
 
