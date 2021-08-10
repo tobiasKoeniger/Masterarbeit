@@ -274,6 +274,7 @@ def main():
                 distance = mainTankLevelSensor.getDistance()
                 waterLevelMainTank = 250 - distance
                 print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
+                time.sleep(1)
                 print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
                 # time.sleep(100)
                 
@@ -305,7 +306,7 @@ def main():
                     print("-------------------")
                 
                 # Detect plant height
-                if(time_delta_plantHeight.seconds > 60): # 60*60
+                if(time_delta_plantHeight.seconds > 60*60): # 60*60
                     
                     for i in range(7, 10):
                         
@@ -678,7 +679,7 @@ def main():
                     now = timedelta(hours = now.hour, minutes = now.minute)
 
                     # Is mean EC level below nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 10) ):
+                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 1000) ):
 
                         # Adjust nutrient level            
                         # Turn each pump on for a short moment according to the nutrient table                                  
@@ -702,7 +703,7 @@ def main():
                 # Time outside nutrient table
                 else:
                     # Is mean EC level below last nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 10) ):                    
+                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 1000) ):                    
                         
                         # Adjust nutrient level  
                         # Turn each pump on for a short moment according to the nutrient table              
