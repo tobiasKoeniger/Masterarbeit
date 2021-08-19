@@ -120,10 +120,12 @@ def main():
     
     # Initialize main tank's water level buffer
     # Array of ten 
-    waterLevelMainTankBuffer = [80] * 10
+    waterLevelMainTankBuffer = [80] * 25
     
     # Number of tank level updates
     waterLevelMainTankUpdates = 0
+    
+    skipLevelSensor = False
     
     # EC level buffer
     ecLevelBuffer = [1.2] * 10
@@ -230,7 +232,7 @@ def main():
                 # # Set main tank level sensor
                 # gpioExpander.setSensor(0)
                 
-                # time.sleep(0.1)
+                # # time.sleep(0.1)
                 
                 # # Reinitialize sensor
                 # mainTankLevelSensor = DistanceSensor()
@@ -270,12 +272,24 @@ def main():
                 print ("Water temperature: {:.1f} °C".format(waterTemperature) )
                 
                 
-                # Read the main water level sensor
-                distance = mainTankLevelSensor.getDistance()
-                waterLevelMainTank = 250 - distance
-                print ("Distance of main tank level sensor: {0} mm".format(distance) ) 
-                time.sleep(1)
-                print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
+                # # Read the main water level sensor
+                # try:
+                    # distance = mainTankLevelSensor.getDistance()
+                    # waterLevelMainTank = 247 - distance
+                    
+                    # print ("Distance of main tank level sensor: {0} mm".format(distance) )                                                         
+                    # print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
+                    
+                    # time.sleep(0.5)
+                    
+                    # skipLevelSensor = False
+                    
+                # # Catch an error message and display the message
+                # except (KeyboardInterrupt, SystemExit, OSError):
+                    # print("Skipping main tank level sensor")
+                    # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+                    # skipLevelSensor = True
+                                    
                 # time.sleep(100)
                 
                 # Detect plant height and tank levels
@@ -312,7 +326,7 @@ def main():
                         
                         # Detect plant height
                         gpioExpander.setSensor(i)
-                        time.sleep(0.1)
+                        time.sleep(0.01)
                         
                         # try:
                             # distance_sensor
@@ -340,7 +354,7 @@ def main():
                     # Set main tank level sensor
                     gpioExpander.setSensor(0)
                     
-                    time.sleep(0.1)
+                    time.sleep(0.01)
                     
                     # Reinitialize sensor
                     mainTankLevelSensor = DistanceSensor()
@@ -357,7 +371,7 @@ def main():
                         
                         # Detect plant height
                         gpioExpander.setSensor(i)
-                        time.sleep(0.1)
+                        time.sleep(0.01)
                         
                         # Reinitialize sensor
                         distance_sensor = DistanceSensor()
@@ -377,11 +391,55 @@ def main():
                     # Set main tank level sensor
                     gpioExpander.setSensor(0)
                     
-                    time.sleep(0.1)
+                    time.sleep(0.01)
                     
                     # Reinitialize sensor
                     mainTankLevelSensor = DistanceSensor()
                     print("Main tank sensor reinitialized")
+                    
+                    
+                    sensorRepetitions = 0
+                    
+                    while(sensorRepetitions < 25):
+                    
+                        # Read the main water level sensor
+                        try:
+                            distance = mainTankLevelSensor.getDistance()
+                            waterLevelMainTank = 247 - distance
+                            
+                            # print ("Distance of main tank level sensor: {0} mm".format(distance) )                                                         
+                            print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
+                            
+                            # time.sleep(0.5)
+                            
+                            skipLevelSensor = False
+                                                                                    
+                            
+                        # Catch an error message and display the message
+                        except (KeyboardInterrupt, SystemExit, OSError):
+                            print("Skipping main tank level sensor")
+                            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+                            skipLevelSensor = True
+                                                        
+                            
+                        if (skipLevelSensor == False):
+                        
+                            # Set first value of buffer                
+                            waterLevelMainTankBuffer[0] = waterLevelMainTank
+                            waterLevelMainTankUpdates += 1
+                            
+                            # Rotate buffer
+                            waterLevelMainTankBuffer = waterLevelMainTankBuffer[-1:] + waterLevelMainTankBuffer[:-1]     
+                            
+                            sensorRepetitions += 1    
+                        
+                        
+                    print(waterLevelMainTankBuffer)
+                    
+                    # Calculate mean water level
+                    meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
+            
+                    print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
                     
                    
                    
@@ -455,22 +513,9 @@ def main():
                 
                 print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                                                  
                 
-                # Water level main tank
                 
-                # Set first value of buffer                
-                waterLevelMainTankBuffer[0] = waterLevelMainTank
-                waterLevelMainTankUpdates += 1
-                
-                # Rotate buffer
-                waterLevelMainTankBuffer = waterLevelMainTankBuffer[-1:] + waterLevelMainTankBuffer[:-1]
-                
-                print(waterLevelMainTankBuffer)
-                
-                # Calculate mean water level
-                meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
-                
-                print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
-                
+                        
+                # time.sleep(0.5)
                 
                 # Update database
                 database.updateSensors(visibleLight, waterTemperature, meanWaterLevelMainTank)  
@@ -489,7 +534,7 @@ def main():
                 # Check, if the main tank's water level is too low 
                 # and there have been at least 10 water level main tank sensor readings
                 # and the current time is within the sunrise sunset hours
-                if( (meanWaterLevelMainTank < 60) and (waterLevelMainTankUpdates > 10) and (now > userInput.sunrise) and (now < userInput.sunset)):
+                while( (meanWaterLevelMainTank < 60) and (now > userInput.sunrise) and (now < userInput.sunset)):
                     
                     # Turn water refill pump on
                     gpio.pumpWater.value = 0.2
@@ -499,6 +544,50 @@ def main():
                     time.sleep(0.5)
                     
                     waterLevelMainTankUpdates = 0
+                    
+                    sensorRepetitions = 0
+                    
+                    while(sensorRepetitions < 25):
+                    
+                        # Read the main water level sensor
+                        try:
+                            distance = mainTankLevelSensor.getDistance()
+                            waterLevelMainTank = 247 - distance
+                            
+                            # print ("Distance of main tank level sensor: {0} mm".format(distance) )                                                         
+                            print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
+                            
+                            # time.sleep(0.5)
+                            
+                            skipLevelSensor = False
+                                                                                    
+                            
+                        # Catch an error message and display the message
+                        except (KeyboardInterrupt, SystemExit, OSError):
+                            print("Skipping main tank level sensor")
+                            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+                            skipLevelSensor = True
+                                                        
+                            
+                        if (skipLevelSensor == False):
+                        
+                            # Set first value of buffer                
+                            waterLevelMainTankBuffer[0] = waterLevelMainTank
+                            waterLevelMainTankUpdates += 1
+                            
+                            # Rotate buffer
+                            waterLevelMainTankBuffer = waterLevelMainTankBuffer[-1:] + waterLevelMainTankBuffer[:-1]     
+                            
+                            sensorRepetitions += 1    
+                        
+                        
+                    print(waterLevelMainTankBuffer)
+                    
+                    # Calculate mean water level
+                    meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
+            
+                    print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
+                    
                     
                 # Turn water refill pump off
                 else:

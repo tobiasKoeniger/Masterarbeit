@@ -21,6 +21,8 @@ class WaterTemperatureSensor:
 		
 		chan = AnalogIn(self.ads, ADS.P0)
 		
+		print("Voltage Water sensor: {}".format(chan.voltage))
+		
 		# resistance in kohm
 		supplyVoltage = 2.843
 		
@@ -35,6 +37,7 @@ class WaterTemperatureSensor:
 	def steinhart_temperature_C(self, resistance, Ro=10000.0, To=25.0, beta=3950.0):
 
 		if ((resistance / Ro) <= 0):
+			print("Resistance: {}".format(resistance))
 			
 			print("Warning: Temperature sensor out of range")
 			

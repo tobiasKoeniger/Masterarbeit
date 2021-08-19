@@ -21,10 +21,15 @@ class WaterTemperatureSensor:
 		
 		chan = AnalogIn(self.ads, ADS.P0)
 		
+		# print("Voltage Water sensor: {}".format(chan.voltage))
+		
 		# resistance in kohm
-		supplyVoltage = 3.17
+		supplyVoltage = 3.24
 		
 		resistance = (chan.voltage * 10) / (supplyVoltage - chan.voltage)
+		
+		# print("Voltage Water sensor: {}".format(chan.voltage))
+		# print("Resistance: {} kOhm".format(resistance))
 		
 		# temperature
 		waterTemperature = self.steinhart_temperature_C(resistance*1000)
