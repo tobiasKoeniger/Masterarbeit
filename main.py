@@ -127,11 +127,11 @@ def main():
     
     skipLevelSensor = False
     
-    # EC level buffer
-    ecLevelBuffer = [1.2] * 10
+    # # EC level buffer
+    # ecLevelBuffer = [1.2] * 10
     
-    # Number of EC level updates
-    ecLevelUpdates = 0
+    # # Number of EC level updates
+    # ecLevelUpdates = 0
     
     # Initialize nutrient matrix
     nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],     # FloraGro
@@ -493,25 +493,31 @@ def main():
                 
                 # Read EC level
                 # ecLevel = ecsensor.getEC()
-                ecLevel = database.getEC()
-                print("EC level: {}".format(ecLevel))
+                
+                meanECLevel = database.getEC()
+                
+                print("Mean EC level: {}".format(meanECLevel))
+                
+                # if (ecLevel != 1):                    
+                    # print("Mean EC level: {}".format(ecLevel))
+                    
                 # ecLevel = 1.2
                 
-                if (ecLevelBuffer[-1] != ecLevel):
+                # if (ecLevelBuffer[-1] != ecLevel):
                     
-                    # Set first value of buffer                
-                    ecLevelBuffer[0] = ecLevel
-                    ecLevelUpdates += 1
+                    # # Set first value of buffer                
+                    # ecLevelBuffer[0] = ecLevel
+                    # ecLevelUpdates += 1
                     
-                    # Rotate buffer
-                    ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
+                    # # Rotate buffer
+                    # ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
                     
-                    print(ecLevelBuffer)
+                    # print(ecLevelBuffer)
                     
-                # Calculate mean EC level
-                meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)   
+                # # Calculate mean EC level
+                # meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)   
                 
-                print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                                                  
+                # print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                                                  
                 
                 
                         

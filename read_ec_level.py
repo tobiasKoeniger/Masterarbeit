@@ -37,6 +37,10 @@ def main():
     print("*Database init.. ", end = '\n\n')
     database = Database()
     print("\nsuccessful")    
+    
+    
+    # Write default number to database
+    database.updateEC(100)  
 
 
     # Initialize the GPIO class
@@ -57,6 +61,12 @@ def main():
     print("EC sensor init.. ", end = '')
     ecsensor = EcSensor()
     print("successful")
+    
+    
+    # Array of ten 
+    ecLevelBuffer = [2] * 10
+    
+    readingNumber = 0 
             
 
     # If one manually closes the program with Ctrl+c:
@@ -86,23 +96,51 @@ def main():
         # Check, if system is switched on
         if (userInput.systemState == True):
         
-            # Try to run the loop
-            try:
+            # Read EC level
+            print("*Reading EC level")
+            
+            while(readingNumber < 10):
+            
+                # Try to run the loop
+                try:
 
-                # Read EC level
-                print("*Reading EC level")
-                                
-                ecLevel = ecsensor.getEC()
-                print("-----------------------------------------------------------------------------------")
-                print("*success*")
-                
-                # Update database
-                database.updateEC(ecLevel)  
+                    ecLevel = ecsensor.getEC()                
+                    
+                    # Set first value of buffer                
+                    ecLevelBuffer[0] = ecLevel                
+                    
+                    # Rotate buffer
+                    ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]                                                                                                                                                         
 
+                    readingNumber += 1
+                    
+                    print("ooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+                    
+                # Catch an error message and display the message
+                except (KeyboardInterrupt, SystemExit):
+                    cleanAndExit()
                 
-            # Catch an error message and display the message
-            except (KeyboardInterrupt, SystemExit):
-                cleanAndExit()
+                time.sleep(3)
+                
+                
+            print(ecLevelBuffer)    
+            
+            # Calculate mean water level
+            meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+    
+            print("Current EC level mean: {:.1f}".format(meanECLevel))
+            
+            
+            # Update database
+            database.updateEC(meanECLevel)  
+            
+            
+            print("-----------------------------------------------------------------------------------")
+            print("*success*")
+            
+            
+            readingNumber = 0
+            
                 
             time.sleep(60)
             

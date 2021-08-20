@@ -90,13 +90,17 @@ def main():
 				[humidity, temperature] = dht22.getValues()
 				print("********************************************************************************************")
 				print("*success*")
-				print ("*Humidity: {:.1f} %".format(humidity) )
-				print ("*Temperature: {:.1f} °C".format(temperature) )
 				
-				# Update database
-				database.updateDHT22(temperature, humidity)  
+				try:
+					print ("*Humidity: {:.1f} %".format(humidity) )    # :.1f
+					print ("*Temperature: {:.1f} °C".format(temperature) )
+				
+					# Update database
+					database.updateDHT22(temperature, humidity)  
 
-				
+				except (TypeError):
+					print("Skipping DHT22 sensor")
+								
 			# Catch an error message and display the message
 			except (KeyboardInterrupt, SystemExit):
 				cleanAndExit()
