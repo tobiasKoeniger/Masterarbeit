@@ -99,7 +99,7 @@ def main():
             # Read EC level
             print("*Reading EC level")
             
-            while(readingNumber < 10):
+            while(readingNumber < 10): # 10
             
                 # Try to run the loop
                 try:
@@ -120,7 +120,7 @@ def main():
                 except (KeyboardInterrupt, SystemExit):
                     cleanAndExit()
                 
-                time.sleep(3)
+                time.sleep(10)
                 
                 
             print(ecLevelBuffer)    
@@ -128,7 +128,7 @@ def main():
             # Calculate mean water level
             meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
     
-            print("Current EC level mean: {:.1f}".format(meanECLevel))
+            print("Current EC level mean: {:.2f}".format(meanECLevel))
             
             
             # Update database
@@ -142,7 +142,7 @@ def main():
             readingNumber = 0
             
                 
-            time.sleep(60)
+            time.sleep(0)
             
         # System is switched off
         else:  

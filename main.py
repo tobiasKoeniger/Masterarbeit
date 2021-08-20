@@ -798,7 +798,7 @@ def main():
                 # Time outside nutrient table
                 else:
                     # Is mean EC level below last nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 1000) ):                    
+                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset)):                    
                         
                         # Adjust nutrient level  
                         # Turn each pump on for a short moment according to the nutrient table              
@@ -812,9 +812,7 @@ def main():
                         
                         gpio.pumpFloraBloom.value = 0.2                                                
                         time.sleep(nutrientTable[3][8]) 
-                        gpio.pumpFloraBloom.off()  
-                        
-                        ecLevelUpdates = 0
+                        gpio.pumpFloraBloom.off()                                                  
                         
                         print("Nutrients refilled")
     

@@ -22,6 +22,7 @@ class EcSensor:
 
 		self.ads = ADS.ADS1115(self.i2c)
 		self.ads.gain = 2/3
+		# self.ads.mode = Mode.CONTINUOUS
 		
 		# self.transistor5V = LED(16)
 		# self.transistor3V3 = LED(26)
@@ -51,25 +52,53 @@ class EcSensor:
 		waterTemperature = self.waterTemperatureSensor.getTemperature()
 		print ("Water temperature: {:.1f} °C".format(waterTemperature) )
 		
-		self.transistorEC.on()
+		
 		#GPIO.output(5, GPIO.HIGH)
 		
-		time.sleep(0.03)
+		T = 0.001
+		
+		
+		# chan = AnalogIn(self.ads, ADS.P1)
+		
+		# time.sleep(0.03)
+		
+		timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
+		
+		self.transistorEC.on()
+		beginTime = round(time.time() * 1000 * 1000) 
+		
+		while (round(time.time() * 1000 * 1000) < timeEnd):			
+		
+			chan = AnalogIn(self.ads, ADS.P1)		
+			u = chan.voltage	
+			
+			mil = abs( beginTime - round(time.time() * 1000 * 1000) )
+			print("voltage: {0:.2f} V after {1} mus".format(u, mil))
+		
+		# time.sleep(T)
 
-		chan = AnalogIn(self.ads, ADS.P1)
-		
-		time.sleep(0.03)
-		
 		u = chan.voltage
 		
 		self.transistorEC.off()
 		
-		print("voltage: {:.2f} V".format(u))
 		
+		
+		
+		
+		timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
 		
 		self.transistorAntiEC.on()
+		beginTime = round(time.time() * 1000 * 1000) 
 		
-		time.sleep(0.06)
+		while (round(time.time() * 1000 * 1000) < timeEnd):			
+		
+			chan = AnalogIn(self.ads, ADS.P1)		
+			k = chan.voltage	
+			
+			mil = abs( beginTime - round(time.time() * 1000 * 1000) )
+			print("voltage: {0:.2f} V after {1} mus".format(k, mil))
+		
+		# time.sleep(T)
 		
 		self.transistorAntiEC.off()
 		
@@ -79,18 +108,31 @@ class EcSensor:
 		#transistorEC.off()
 		#GPIO.output(5, GPIO.LOW)
 		
-		u_power = 3.157
+		u_power = 3.314
 		resistance_R1 = 470
 
 		# resistance in ohm
-		r = (u * resistance_R1) / (u_power - u)
+		r = ( (u * resistance_R1) / (u_power - u) ) - 1000
 		kohm = r/1000
-		print("resistance: {:.1f} kOhm".format(kohm))
+		print("resistance: {:.3f} kOhm".format(kohm))
 
 		#print("resistance: {} Ohm".format(r))
 		# mS/cm
 		# cell_constant = 25/18
-		cell_constant = 1.356
+		cell_constant_calculated = 0.7 / ((1/r) * 1000)
+		print("cell constant: {:.4f}".format(cell_constant_calculated))
+		
+		# cell_constant = 1.389
+		
+		# cell_constant = 0.206
+		
+		cell_constant = 0.7213
+		
+		# cell_constant = 0.1584
+		
+		# cell_constant = 0.0671
+		
+		# cell_constant = 3.4937
 		ec_raw = (cell_constant) * (1/r) * 1000
 
 		print("ec raw: {:.4f} mS/cm".format(ec_raw))
@@ -107,7 +149,7 @@ class EcSensor:
 		
 		# ec = 0.32 + ( (2.4 - 0.32) / (0.7746 - 0.6714) ) * (ec25 - 0.6714)
 		
-		ec = 13.3559 * ec25 - 9.62
+		ec = 2.20408 * ec25 - 0.90306
 
 		print("final ec: {:.2f} mS/cm".format(ec))
 

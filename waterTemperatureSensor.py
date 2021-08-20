@@ -24,7 +24,7 @@ class WaterTemperatureSensor:
 		# print("Voltage Water sensor: {}".format(chan.voltage))
 		
 		# resistance in kohm
-		supplyVoltage = 3.24
+		supplyVoltage = 3.3
 		
 		resistance = (chan.voltage * 10) / (supplyVoltage - chan.voltage)
 		
