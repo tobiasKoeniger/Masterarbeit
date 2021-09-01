@@ -73,11 +73,11 @@ class EcSensor:
 			u = chan.voltage	
 			
 			mil = abs( beginTime - round(time.time() * 1000 * 1000) )
-			print("voltage: {0:.2f} V after {1} mus".format(u, mil))
+			print("voltage: {0:.3f} V after {1} mus".format(u, mil))
 		
 		# time.sleep(T)
 
-		u = chan.voltage
+		# u = chan.voltage
 		
 		self.transistorEC.off()
 		
@@ -108,8 +108,12 @@ class EcSensor:
 		#transistorEC.off()
 		#GPIO.output(5, GPIO.LOW)
 		
-		u_power = 3.314
-		resistance_R1 = 470
+		u_power = 3.283 #3.314 #3.283
+		resistance_R1 = 470 # 3594 # 470 # 1301 # 470
+		# resistance_R1 = 357.1
+		# resistance_R1 = 674
+		# resistance_R1 = 988
+		# resistance_R1 = 3584
 
 		# resistance in ohm
 		r = ( (u * resistance_R1) / (u_power - u) ) - 1000
@@ -161,7 +165,7 @@ class EcSensor:
 		time.sleep(0)
 
 
-		return ec
+		return u
 		
 	
 		

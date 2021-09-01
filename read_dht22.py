@@ -42,13 +42,13 @@ def main():
 	# Initialize the GPIO class
 	print("*GPIO init.. ", end = '\n\n')
 	# gpio = GPIO()
-	transistor3V3 = LED(26)
+	# transistor3V3 = LED(26)
 
 	# Turn the circuits on for initialization
-	transistor3V3.off()
-	print("*3 V circuit turned on")
+	# transistor3V3.off()
+	# print("*3 V circuit turned on")
 
-	time.sleep(0.1)
+	# time.sleep(0.1)
 
 	# DHT22: temperature and humidity
 	print("*Temperature and humidity sensor init.. ", end = '')

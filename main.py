@@ -25,7 +25,7 @@ from lightSensor import LightSensor
 from waterTemperatureSensor import WaterTemperatureSensor
 from distanceSensor import DistanceSensor
 from pHsensor import PHsensor
-# from ecSensor import EcSensor
+from ecSensor import EcSensor
 
 
 # Load expander class
@@ -113,9 +113,12 @@ def main():
     # print("*successful")
     
     # EC sensor
-    # print("EC sensor init.. ", end = '')
-    # ecsensor = EcSensor()
-    # print("successful")
+    print("EC sensor init.. ", end = '')
+    ecsensor = EcSensor()
+    print("successful")
+    
+    
+    ecLevelBuffer = [2] * 10
     
     
     # Initialize main tank's water level buffer
@@ -236,12 +239,7 @@ def main():
                 
                 # # Reinitialize sensor
                 # mainTankLevelSensor = DistanceSensor()
-                # print("Main tank sensor reinitialized")
-                
-                
-                # Turn the circulation pump on
-                gpio.pumpCirculation.value = 0.3
-                print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
+                # print("Main tank sensor reinitialized")                                            
             
             
                 # Read sensors
@@ -269,6 +267,7 @@ def main():
                 
                 # Read the water temperature sensor
                 waterTemperature = waterTemperatureSensor.getTemperature()
+                # waterTemperature = 20
                 print ("Water temperature: {:.1f} °C".format(waterTemperature) )
                 
                 
@@ -303,11 +302,19 @@ def main():
                     
                     last_tankLevel_detection = datetime.now() 
                     
+                    last_ecLevel_detection = datetime.now() 
+                    
+                    ecReadingNumber = 0 
+                    
                     start_up = False                
                     
                     plant_heights = [0, 0, 0]  
                     
-                    tank_levels = [0, 0, 0, 0, 0, 0]                              
+                    tank_levels = [0, 0, 0, 0, 0, 0]         
+                    
+                    meanECLevel = 100       
+                    
+                    ec_start_up = True
                     
                     
                 time_delta_plantHeight = current_time - last_plantHeight_detection
@@ -447,6 +454,12 @@ def main():
                     
                     print("Sensor init finished")
                     print("--------------------\n")
+                    
+                    
+                    
+                # Turn the circulation pump on
+                gpio.pumpCirculation.value = 0.3
+                print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
                    
                     
                 # Auto Adjust LED height 
@@ -494,9 +507,72 @@ def main():
                 # Read EC level
                 # ecLevel = ecsensor.getEC()
                 
-                meanECLevel = database.getEC()
+                current_time = datetime.now()
                 
-                print("Mean EC level: {}".format(meanECLevel))
+                # Detect tank levels
+                time_delta_ecLevel = current_time - last_ecLevel_detection
+                
+                print("time_delta_ecLevel.seconds: {}".format(time_delta_ecLevel.seconds))
+                
+                if((time_delta_ecLevel.seconds > 60*60) or (ec_start_up == True)): # 60*60                                                        
+                
+                    timeBetweenECMeasurements = 7 # 30                    
+                    nextECReading = timeBetweenECMeasurements * ecReadingNumber + 6
+                    
+                    print("nextECReading: {}".format(nextECReading))
+                    
+                    if((ecReadingNumber < 10) and (time_delta_ecLevel.seconds > nextECReading)): # 10
+            
+                        # Try to make a measurement
+                        try:
+                            
+                            print(str(ecReadingNumber + 1)*90)
+                            print("\n\nEC Reading No. {}".format(ecReadingNumber + 1))
+                            
+                            ecLevel = ecsensor.getEC()                
+                            
+                            # Set first value of buffer                
+                            ecLevelBuffer[0] = ecLevel                
+                            
+                            # Rotate buffer
+                            ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]         
+                            
+                            print("ecLevelBuffer: {}".format(ecLevelBuffer))                                                                                                                                               
+
+                            ecReadingNumber += 1
+                            
+                            # print("ooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+                            
+                        # Catch an error message and display the message
+                        except (KeyboardInterrupt, SystemExit):
+                            cleanAndExit()
+                    
+                    # T = 7
+                    # time.sleep(T)
+                    
+                    if(ecReadingNumber >= 10):
+                                        
+                        # print(ecLevelBuffer)    
+                        # ecLevelBuffer = ecLevelBuffer[+1:] + ecLevelBuffer[:+1]         
+                        
+                        # print(ecLevelBuffer[1:10])
+                        # print((len(ecLevelBuffer) - 1))
+                        
+                        # Calculate mean water level
+                        # meanECLevel = sum(ecLevelBuffer[1:10]) / (len(ecLevelBuffer) - 1)
+                        meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+                        
+                        database.updateEC(meanECLevel)                                                                            
+                                                
+                        ecReadingNumber = 0                
+                        
+                        last_ecLevel_detection = datetime.now()   
+                        
+                        print("===================================================================================") 
+                
+                        print("Current EC level mean: {:.2f}".format(meanECLevel))    
+                        
+                        ec_start_up = False                                            
                 
                 # if (ecLevel != 1):                    
                     # print("Mean EC level: {}".format(ecLevel))
@@ -774,7 +850,7 @@ def main():
                     now = timedelta(hours = now.hour, minutes = now.minute)
 
                     # Is mean EC level below nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now > userInput.sunrise) and (now < userInput.sunset) and (ecLevelUpdates > 1000) ):
+                    if( (meanECLevel < nutrientTable[3][elapsed_weeks]) and (now > userInput.sunrise) and (now < userInput.sunset) and False):
 
                         # Adjust nutrient level            
                         # Turn each pump on for a short moment according to the nutrient table                                  
@@ -798,7 +874,7 @@ def main():
                 # Time outside nutrient table
                 else:
                     # Is mean EC level below last nutrient table entry and within sunrise/ sunset and the EC level has been updated at least 10 times?
-                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset)):                    
+                    if( (meanECLevel < nutrientTable[3][8]) and (now > userInput.sunrise) and (now < userInput.sunset) and False):                    
                         
                         # Adjust nutrient level  
                         # Turn each pump on for a short moment according to the nutrient table              

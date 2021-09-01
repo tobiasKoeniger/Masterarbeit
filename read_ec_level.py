@@ -54,7 +54,7 @@ def main():
     transistor5V.off()
     print("*3.3 V amd 5 V circuit turned on")
 
-    time.sleep(0.1)
+    time.sleep(3)
 
 
     # EC sensor
@@ -99,7 +99,7 @@ def main():
             # Read EC level
             print("*Reading EC level")
             
-            while(readingNumber < 10): # 10
+            while(readingNumber < 40): # 10
             
                 # Try to run the loop
                 try:
@@ -120,7 +120,12 @@ def main():
                 except (KeyboardInterrupt, SystemExit):
                     cleanAndExit()
                 
-                time.sleep(1)
+                T = 7
+                time.sleep(T)
+                
+                # for x in range(T):                   
+                    # print(".", end = '') 
+                    # time.sleep(1)
                 
                 
             print(ecLevelBuffer)    
