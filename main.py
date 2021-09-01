@@ -9,6 +9,8 @@ from datetime import datetime
 from datetime import timedelta
 import sys
 
+from statistics import median
+
 # Raspberry GPIO libraries
 # import RPi.GPIO as GPIO
 from gpiozero import LED
@@ -16,8 +18,6 @@ from gpiozero import LED
 # MySQL library
 import mysql.connector
 
-# Threading
-# from threading import *
 
 # Load sensor classes
 from dht22 import DHT22
@@ -108,9 +108,9 @@ def main():
     print("successful")
     
     # DHT22: temperature and humidity
-    # print("*Temperature and humidity sensor init.. ", end = '')
-    # dht22 = DHT22()
-    # print("*successful")
+    print("*Temperature and humidity sensor init.. ", end = '')
+    dht22 = DHT22()
+    print("*successful")
     
     # EC sensor
     print("EC sensor init.. ", end = '')
@@ -118,23 +118,28 @@ def main():
     print("successful")
     
     
-    ecLevelBuffer = [2] * 10
+    # EC level detection repetitions and buffer
+    ecLevelRepetitions = 10
+    ecLevelBuffer = [2] * ecLevelRepetitions
+    ecLevelDetectionInterval = 60*60 
     
     
     # Initialize main tank's water level buffer
-    # Array of ten 
-    waterLevelMainTankBuffer = [80] * 25
+    waterLevelMainTankBuffer = [80] * 10
+    
+    tankLevelDetectionInterval = 60 * 60
+    
+    waitingOnTankLevelDetection = False
+    
+    # DHT22 interval
+    dhtDetectionInterval = 60
     
     # Number of tank level updates
     waterLevelMainTankUpdates = 0
     
+    # Skip the sensor if an error is reported
     skipLevelSensor = False
     
-    # # EC level buffer
-    # ecLevelBuffer = [1.2] * 10
-    
-    # # Number of EC level updates
-    # ecLevelUpdates = 0
     
     # Initialize nutrient matrix
     nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],     # FloraGro
@@ -143,21 +148,13 @@ def main():
                      [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]
         
     
-    # # userInput class to store user input data 
-    # userInput = UserInput()
-    
-    
-    # Turn the 3.3 V circuit and pH meter off again
-    # gpio.transistor5V.on()
-    # gpio.transistor3V3.on()
+    # Turn PH sensor off
     gpio.transistorPH.on()
     print("PH meter circuit turned off")
     
     
     print()
     print()
-    
-    # time.sleep(10)
     
 
     # If one manually closes the program with Ctrl+c:
@@ -182,17 +179,14 @@ def main():
         sys.exit()
 
 
+    # Get current user input from the database
     userInput = database.getUserInput()  
     
-    # # Check, if system is switched on
-    # if (userInput.systemState == True):
-
-        # T = Thread(target=dht22reading(dht22))
-        # T.setDaemon(True)
-        # T.start()
-    
-    
+    # Starting system
     start_up = True
+    
+    # Remember last system state user input
+    last_systemState = False
     
 
     # Main loop
@@ -201,11 +195,9 @@ def main():
         # Try to run the loop
         try:                            
             
-            # Check userInput data
-            # print(database.getUserInput().systemState)
+            # Check userInput data            
             userInput = database.getUserInput()            
-            
-            
+                        
             # userInput.time = x[0]
             # userInput.systemState = x[1]
             # userInput.pHmeasureState = x[2]
@@ -219,40 +211,27 @@ def main():
             # userInput.ledDown = x[10]
             
             print()
-            
-            
+                        
+                        
             # Check, if system is switched on
             if (userInput.systemState == True):
-                
-                # Turn the 3.3 V and 5 V circuits on 
-                gpio.transistor5V.off()
-                gpio.transistor3V3.off()                
-                print("5 V circuit turned on")
-                
-                time.sleep(0.1)
-                # time.sleep(100)
-                
-                # # Set main tank level sensor
-                # gpioExpander.setSensor(0)
-                
-                # # time.sleep(0.1)
-                
-                # # Reinitialize sensor
-                # mainTankLevelSensor = DistanceSensor()
-                # print("Main tank sensor reinitialized")                                            
-            
-            
-                # Read sensors
-                                
-                # Read the humidity and temperature values from the DHT22
-                
-                # threading.Thread(target=dht22reading(dht22)).start()
-                
-                print("Reading sensors")
-                # [humidity, temperature] = dht22.getValues()
-                # print ("Humidity: {:.1f} %".format(humidity) )
-                # print ("Temperature: {:.1f} °C".format(temperature) )
-                
+                                                
+                # Switch transistors on if system state was just enabled
+                if(last_systemState == False):
+                    
+                    # Turn the 3.3 V and 5 V circuits on 
+                    gpio.transistor5V.off()
+                    gpio.transistor3V3.off()                
+                    print("3.3 V and 5 V circuits turned on")
+                    
+                    time.sleep(0.1)
+                    
+                # System state has been enabled
+                last_systemState = True
+
+
+                # Reading sensors
+                print("Reading sensors")                            
                 
                 # Read the light sensor values
                 [full_spectrum, infrared] = lightSensor.getValues()
@@ -262,34 +241,83 @@ def main():
                 
                 print ("Full Spectrum(IR + Visible) : {} lux".format(full_spectrum) )
                 print ("Infrared Value : {} lux".format(infrared) )
-                print ("Visible Value : {} lux".format(visibleLight) )
-                # time.sleep(100)
+                print ("Visible Value : {} lux".format(visibleLight) )                
                 
                 # Read the water temperature sensor
-                waterTemperature = waterTemperatureSensor.getTemperature()
-                # waterTemperature = 20
-                print ("Water temperature: {:.1f} °C".format(waterTemperature) )
-                
-                
-                # # Read the main water level sensor
-                # try:
-                    # distance = mainTankLevelSensor.getDistance()
-                    # waterLevelMainTank = 247 - distance
+                try: 
+                    waterTemperature = waterTemperatureSensor.getTemperature()
+                    print ("Water temperature: {:.1f} °C".format(waterTemperature) )
                     
-                    # print ("Distance of main tank level sensor: {0} mm".format(distance) )                                                         
-                    # print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
-                    
-                    # time.sleep(0.5)
-                    
-                    # skipLevelSensor = False
-                    
-                # # Catch an error message and display the message
-                # except (KeyboardInterrupt, SystemExit, OSError):
-                    # print("Skipping main tank level sensor")
-                    # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                    # skipLevelSensor = True
+                except (KeyboardInterrupt, SystemExit, OSError):                    
+                    waterTemperature = 20
+                    print ("Skipping water temperature sensor. Setting water temperature to: {:.1f} °C".format(waterTemperature) )
                                     
-                # time.sleep(100)
+                
+                # Check, if the LEDs are switched on
+                if (userInput.ledState == True):
+                    
+                    # Get current time
+                    now = datetime.now()
+                    
+                    
+                    # Transform current time into timedelta (of that day)
+                    now = timedelta(hours = now.hour, minutes = now.minute)
+                    print(now)
+                    
+                    # If current time is between sunrise and sunset
+                    if( (now > userInput.sunrise) and (now < userInput.sunset) ):    
+                        
+                        print("Current time is between sunrise and sunset")                                        
+                    
+                        # If LEDs are set to auto adjust
+                        if (userInput.autoLedState == True):
+                            
+                            # Calculate LED intensity from visibleLight value
+                            ledIntensity = 1 - (visibleLight / 1000 / 15)
+                            
+                            if(abs(gpio.leds13.value - ledIntensity) > 0.05):
+                            
+                                while ((ledIntensity - gpio.leds13.value) > 0.005):                            
+                                
+                                    gpio.leds13.value += 0.001
+                                    gpio.leds15.value += 0.001
+                                    
+                                    time.sleep(0.001)
+                                    
+                                while ((gpio.leds13.value - ledIntensity) > 0.005):                            
+                                
+                                    gpio.leds13.value -= 0.001
+                                    gpio.leds15.value -= 0.001
+                                    
+                                    time.sleep(0.001)
+                                
+                                print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
+                        
+                        # No auto adjust
+                        else:
+                            # Turn LEDs on
+                            gpio.leds13.value = 0.5
+                            gpio.leds15.value = 0.5
+                            
+                            print("Turned 1:3 LEDs to {0} % and 1:5 LEDs to {1} %".format(gpio.leds13.value*100, gpio.leds15.value*100))
+                            
+                    # Current time not between sunrise and sunset
+                    else:
+                        # Turn LEDs off
+                        gpio.leds13.off()
+                        gpio.leds15.off()
+                        
+                        print("LEDs switched off")
+                    
+                # LEDs not switched on
+                else: 
+                    # Turn LEDs off
+                    gpio.leds13.off()
+                    gpio.leds15.off()
+                    
+                    print("LEDs switched off")
+
+
                 
                 # Detect plant height and tank levels
                 
@@ -304,6 +332,8 @@ def main():
                     
                     last_ecLevel_detection = datetime.now() 
                     
+                    last_dth22_detection = datetime.now() 
+                    
                     ecReadingNumber = 0 
                     
                     start_up = False                
@@ -314,65 +344,29 @@ def main():
                     
                     meanECLevel = 100       
                     
-                    ec_start_up = True
+                    ec_start_up = True                                        
+                    
+                    dth_start_up = True
                     
                     
                 time_delta_plantHeight = current_time - last_plantHeight_detection
             
                 print(time_delta_plantHeight.seconds)
                 
+                
+                
                 if(time_delta_plantHeight.seconds == 86399):
                     
                     print("\nInitial sensor init")
-                    print("-------------------")
+                    print("-------------------")   
                 
-                # Detect plant height
-                if(time_delta_plantHeight.seconds > 60*60): # 60*60
-                    
-                    for i in range(7, 10):
-                        
-                        # Detect plant height
-                        gpioExpander.setSensor(i)
-                        time.sleep(0.01)
-                        
-                        # try:
-                            # distance_sensor
-                        # except NameError:
-                            # pass
-                        # else: 
-                            # del distance_sensor
-                            # print("deleted")
-                        # time.sleep(100)
-                        # Reinitialize sensor
-                        distance_sensor = DistanceSensor()                        
-                        
-                        distance = distance_sensor.getDistance()
-                        
-                        plant_heights[i - 7] = distance
-                        
-                        print ("Distance plant height sensor {0}: {1} mm".format((i-6), plant_heights[i - 7]) ) 
-                    
-                    
-                    last_plantHeight_detection = datetime.now()
-                    
-                    start_up = False
-                    
-                    
-                    # Set main tank level sensor
-                    gpioExpander.setSensor(0)
-                    
-                    time.sleep(0.01)
-                    
-                    # Reinitialize sensor
-                    mainTankLevelSensor = DistanceSensor()
-                    print("Main tank sensor reinitialized")
                 
-                    
-                    
                 # Detect tank levels
                 time_delta_tankLevel = current_time - last_tankLevel_detection
                 
-                if(time_delta_tankLevel.seconds > 60*60): # 60*60
+                if(time_delta_tankLevel.seconds > tankLevelDetectionInterval): # 60*60
+                    
+                    tankLevelDetectionInterval = 60 * 60
                     
                     for i in range(1, 7):
                         
@@ -407,7 +401,7 @@ def main():
                     
                     sensorRepetitions = 0
                     
-                    while(sensorRepetitions < 25):
+                    while(sensorRepetitions < 10):
                     
                         # Read the main water level sensor
                         try:
@@ -425,7 +419,7 @@ def main():
                         # Catch an error message and display the message
                         except (KeyboardInterrupt, SystemExit, OSError):
                             print("Skipping main tank level sensor")
-                            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+                            print("X"*90)
                             skipLevelSensor = True
                                                         
                             
@@ -444,24 +438,274 @@ def main():
                     print(waterLevelMainTankBuffer)
                     
                     # Calculate mean water level
-                    meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
+                    # meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
+                    
+                    meanWaterLevelMainTank = median(waterLevelMainTankBuffer) 
             
-                    print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
+                    print("Current water tank level median: {:.0f}".format(meanWaterLevelMainTank))
+                                        
+                    waitingOnTankLevelDetection = False
                     
-                   
-                   
-                if(time_delta_plantHeight.seconds == 86399):
+                
+                # Update database
+                database.updateSensors(visibleLight, waterTemperature, meanWaterLevelMainTank)  
+                
+                
                     
-                    print("Sensor init finished")
-                    print("--------------------\n")
+                # Get current time
+                now = datetime.now()
+                
+                # Transform current time into timedelta (of that day)
+                now = timedelta(hours = now.hour, minutes = now.minute)
+
+                # Check, if the main tank's water level is too low 
+                # and there have been at least 10 water level main tank sensor readings
+                # and the current time is within the sunrise sunset hours
+                if( (meanWaterLevelMainTank < 60) and (now > userInput.sunrise) and (now < userInput.sunset) and (waitingOnTankLevelDetection == False)):
+                    
+                    # Turn water refill pump on
+                    gpio.pumpWaterSupply.value = 1 # 0.4
+                    
+                    print("Water refill pump turned on")
+                    
+                    time.sleep(3)
+                    
+                    gpio.pumpWaterSupply.off()
+                    
+                    tankLevelDetectionInterval = 60
+                    
+                    waitingOnTankLevelDetection = True                                                            
+                    
+                    
+                # Turn water refill pump off
+                else:
+                    gpio.pumpWaterSupply.off()
                     
                     
                     
                 # Turn the circulation pump on
                 gpio.pumpCirculation.value = 0.3
                 print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
-                   
+                
                     
+                    
+                # DHT22
+                # current_time = datetime.now()
+                time_delta_dht22 = current_time - last_dth22_detection
+            
+                print("time_delta_dht22.seconds: {}".format(time_delta_dht22.seconds))
+                                            
+                    
+                if( (dth_start_up == True) or (time_delta_dht22.seconds > dhtDetectionInterval ) ):
+                    
+                    [humidity, temperature] = dht22.getValues()
+                    
+                    print("D"*80)
+                    print ("Humidity: {:.1f} %".format(humidity) )
+                    print ("Temperature: {:.1f} °C".format(temperature) )
+                    
+                    database.updateDHT22(humidity, temperature)
+                    
+                    last_dth22_detection = datetime.now()
+                   
+                    dth_start_up = False
+                
+                
+                
+                # Detect plant height
+                if(time_delta_plantHeight.seconds > 60*60): # 60*60
+                    
+                    for i in range(7, 10):
+                        
+                        # Detect plant height
+                        gpioExpander.setSensor(i)
+                        time.sleep(0.01)
+                        
+
+                        distance_sensor = DistanceSensor()                        
+                        
+                        distance = distance_sensor.getDistance()
+                        
+                        plant_heights[i - 7] = distance
+                        
+                        print ("Distance plant height sensor {0}: {1} mm".format((i-6), plant_heights[i - 7]) ) 
+                    
+                    
+                    last_plantHeight_detection = datetime.now()
+                    
+                    start_up = False
+                    
+                    
+                    # Set main tank level sensor
+                    gpioExpander.setSensor(0)
+                    
+                    time.sleep(0.01)
+                    
+                    # Reinitialize sensor
+                    mainTankLevelSensor = DistanceSensor()
+                    print("Main tank sensor reinitialized")
+                
+
+                   
+                if(time_delta_plantHeight.seconds == 86399):
+                    
+                    print("Sensor init finished")
+                    print("--------------------\n")
+                    
+                            
+               
+                
+                # EC level
+                
+                # Read EC level
+                
+                current_time = datetime.now()
+                
+                # Detect tank levels
+                time_delta_ecLevel = current_time - last_ecLevel_detection
+                
+                
+                print("time_delta_ecLevel.seconds: {}".format(time_delta_ecLevel.seconds))
+                
+                # timeBetweenECMeasurements = 15 # 30                    
+                # nextECReading = timeBetweenECMeasurements * ecReadingNumber + 6
+                
+                # print("nextECReading: {}".format(nextECReading))
+                
+                # if((ecReadingNumber < ecLevelRepetitions) and (time_delta_ecLevel.seconds > nextECReading)): # 10
+
+                    # # Try to make a measurement
+                    # try:
+                        
+                        # print(str(ecReadingNumber + 1)*90)
+                        # print("\n\nEC Reading No. {}".format(ecReadingNumber + 1))
+                        
+                        # time.sleep(0.2)
+                        # ecLevel = ecsensor.getEC()                
+                        
+                        # # Set first value of buffer                
+                        # ecLevelBuffer[0] = ecLevel                
+                        
+                        # # Rotate buffer
+                        # ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]         
+                        
+                        # print("ecLevelBuffer: {}".format(ecLevelBuffer))                                                                                                                                               
+
+                        # ecReadingNumber += 1
+                                                    
+                        
+                    # # Catch an error message and display the message
+                    # except (KeyboardInterrupt, SystemExit):
+                        # cleanAndExit()
+                
+                # # T = 7
+                # # time.sleep(T)
+                
+                # if(ecReadingNumber >= ecLevelRepetitions):
+                                    
+                    # # print(ecLevelBuffer)                              
+                    
+                    # print(ecLevelBuffer[1:ecLevelRepetitions])
+                    # print((len(ecLevelBuffer) - 1))
+                    
+                    # # Calculate mean water level
+                    # # meanECLevel = sum(ecLevelBuffer[1:ecLevelRepetitions]) / (len(ecLevelBuffer) - 1)
+                    # # meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+                    
+                    # meanECLevel = median(ecLevelBuffer)
+                    
+                    # database.updateEC(meanECLevel)                                                                            
+                                            
+                    # ecReadingNumber = 0                
+                    
+                    # last_ecLevel_detection = datetime.now()   
+                    
+                    # print("===================================================================================") 
+            
+                    # print("Current EC level median: {:.3f}".format(meanECLevel))    
+                    
+                    # ec_start_up = False      
+                
+                
+                
+                print("time_delta_ecLevel.seconds: {}".format(time_delta_ecLevel.seconds))
+                
+                if((time_delta_ecLevel.seconds > ecLevelDetectionInterval) or (ec_start_up == True)): # 60*60  
+                    
+                    ecLevelDetectionInterval = 60*60 
+                    
+                    time.sleep(3)                                                      
+                
+                    readingNumber = 0
+                    
+                    while(readingNumber < 13): # 10
+            
+                        # Try to run the loop
+                        try:
+                            
+                            print("\n\nEC Reading No. {}".format(readingNumber + 1))
+                            
+                            ecLevel = ecsensor.getEC()                
+                            
+                            # Set first value of buffer                
+                            ecLevelBuffer[0] = ecLevel                
+                            
+                            # Rotate buffer
+                            ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]                                                                                                                                                         
+
+                            readingNumber += 1
+                                                        
+                            
+                        # Catch an error message and display the message
+                        except (KeyboardInterrupt, SystemExit):
+                            cleanAndExit()
+                        
+                        T = 1
+                        time.sleep(T)                        
+                    
+                    
+                    print(ecLevelBuffer)    
+                    
+                    # Calculate mean water level
+                    # meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+                    
+                    meanECLevel = median(ecLevelBuffer)
+            
+                    print("Current EC level median: {:.3f}".format(meanECLevel))
+                    
+                    # Update database
+                    database.updateEC(meanECLevel)  
+                    
+                    
+                    ec_start_up = False
+                    
+                    last_ecLevel_detection = datetime.now()
+                                                                                                                                     
+
+                
+
+                # Check, if pH sensing is switched on 
+                if(userInput.pHmeasureState == True):
+                    
+                    # Turn pH sensor circuit on
+                    gpio.transistorPH.off()
+                    
+                    time.sleep(0.1)
+                    
+                    # Read the pH sensor
+                    pH = pHsensor.getPH()
+                    print ("PH: {:.3f}".format(pH))    
+                    
+                    # Update database
+                    database.updatePH(pH)
+                    
+                # PH sensing is switched off
+                else:
+                    # Turn pH sensor circuit off
+                    gpio.transistorPH.on()                      
+                
+                
+                
                 # Auto Adjust LED height 
                 
                 # Get current time
@@ -499,270 +743,7 @@ def main():
                         # time.sleep(0.1)
                         
                     gpio.ledUp.off()
-                    print("LED upward movement stopped")                                                
-                        
-                
-                # EC level
-                
-                # Read EC level
-                # ecLevel = ecsensor.getEC()
-                
-                current_time = datetime.now()
-                
-                # Detect tank levels
-                time_delta_ecLevel = current_time - last_ecLevel_detection
-                
-                print("time_delta_ecLevel.seconds: {}".format(time_delta_ecLevel.seconds))
-                
-                if((time_delta_ecLevel.seconds > 60*60) or (ec_start_up == True)): # 60*60                                                        
-                
-                    timeBetweenECMeasurements = 7 # 30                    
-                    nextECReading = timeBetweenECMeasurements * ecReadingNumber + 6
-                    
-                    print("nextECReading: {}".format(nextECReading))
-                    
-                    if((ecReadingNumber < 10) and (time_delta_ecLevel.seconds > nextECReading)): # 10
-            
-                        # Try to make a measurement
-                        try:
-                            
-                            print(str(ecReadingNumber + 1)*90)
-                            print("\n\nEC Reading No. {}".format(ecReadingNumber + 1))
-                            
-                            ecLevel = ecsensor.getEC()                
-                            
-                            # Set first value of buffer                
-                            ecLevelBuffer[0] = ecLevel                
-                            
-                            # Rotate buffer
-                            ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]         
-                            
-                            print("ecLevelBuffer: {}".format(ecLevelBuffer))                                                                                                                                               
-
-                            ecReadingNumber += 1
-                            
-                            # print("ooooooooooooooooooooooooooooooooooooooooooooooooooooo")
-                            
-                        # Catch an error message and display the message
-                        except (KeyboardInterrupt, SystemExit):
-                            cleanAndExit()
-                    
-                    # T = 7
-                    # time.sleep(T)
-                    
-                    if(ecReadingNumber >= 10):
-                                        
-                        # print(ecLevelBuffer)    
-                        # ecLevelBuffer = ecLevelBuffer[+1:] + ecLevelBuffer[:+1]         
-                        
-                        # print(ecLevelBuffer[1:10])
-                        # print((len(ecLevelBuffer) - 1))
-                        
-                        # Calculate mean water level
-                        # meanECLevel = sum(ecLevelBuffer[1:10]) / (len(ecLevelBuffer) - 1)
-                        meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
-                        
-                        database.updateEC(meanECLevel)                                                                            
-                                                
-                        ecReadingNumber = 0                
-                        
-                        last_ecLevel_detection = datetime.now()   
-                        
-                        print("===================================================================================") 
-                
-                        print("Current EC level mean: {:.2f}".format(meanECLevel))    
-                        
-                        ec_start_up = False                                            
-                
-                # if (ecLevel != 1):                    
-                    # print("Mean EC level: {}".format(ecLevel))
-                    
-                # ecLevel = 1.2
-                
-                # if (ecLevelBuffer[-1] != ecLevel):
-                    
-                    # # Set first value of buffer                
-                    # ecLevelBuffer[0] = ecLevel
-                    # ecLevelUpdates += 1
-                    
-                    # # Rotate buffer
-                    # ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]
-                    
-                    # print(ecLevelBuffer)
-                    
-                # # Calculate mean EC level
-                # meanECLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)   
-                
-                # print("Mean EC level: {:.0f}".format(meanECLevel))                                                                                                                                  
-                
-                
-                        
-                # time.sleep(0.5)
-                
-                # Update database
-                database.updateSensors(visibleLight, waterTemperature, meanWaterLevelMainTank)  
-                
-                
-                # Get current time
-                now = datetime.now()
-                
-                # Extract 
-                # sunrise_hour = int(userInput.sunrise.seconds / (60*60))
-                # sunset_hour = int(userInput.sunset.seconds / (60*60))
-                
-                # Transform current time into timedelta (of that day)
-                now = timedelta(hours = now.hour, minutes = now.minute)
-
-                # Check, if the main tank's water level is too low 
-                # and there have been at least 10 water level main tank sensor readings
-                # and the current time is within the sunrise sunset hours
-                while( (meanWaterLevelMainTank < 60) and (now > userInput.sunrise) and (now < userInput.sunset)):
-                    
-                    # Turn water refill pump on
-                    gpio.pumpWater.value = 0.2
-                    
-                    print("Water refill pump turned on")
-                    
-                    time.sleep(0.5)
-                    
-                    waterLevelMainTankUpdates = 0
-                    
-                    sensorRepetitions = 0
-                    
-                    while(sensorRepetitions < 25):
-                    
-                        # Read the main water level sensor
-                        try:
-                            distance = mainTankLevelSensor.getDistance()
-                            waterLevelMainTank = 247 - distance
-                            
-                            # print ("Distance of main tank level sensor: {0} mm".format(distance) )                                                         
-                            print ("Water level main tank: {0} mm".format(waterLevelMainTank) )   
-                            
-                            # time.sleep(0.5)
-                            
-                            skipLevelSensor = False
-                                                                                    
-                            
-                        # Catch an error message and display the message
-                        except (KeyboardInterrupt, SystemExit, OSError):
-                            print("Skipping main tank level sensor")
-                            print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                            skipLevelSensor = True
-                                                        
-                            
-                        if (skipLevelSensor == False):
-                        
-                            # Set first value of buffer                
-                            waterLevelMainTankBuffer[0] = waterLevelMainTank
-                            waterLevelMainTankUpdates += 1
-                            
-                            # Rotate buffer
-                            waterLevelMainTankBuffer = waterLevelMainTankBuffer[-1:] + waterLevelMainTankBuffer[:-1]     
-                            
-                            sensorRepetitions += 1    
-                        
-                        
-                    print(waterLevelMainTankBuffer)
-                    
-                    # Calculate mean water level
-                    meanWaterLevelMainTank = sum(waterLevelMainTankBuffer) / len(waterLevelMainTankBuffer)
-            
-                    print("Current water tank level mean: {:.0f}".format(meanWaterLevelMainTank))
-                    
-                    
-                # Turn water refill pump off
-                else:
-                    gpio.pumpWater.off()
-                    
-                
-                # Check, if pH sensing is switched on 
-                if(userInput.pHmeasureState == True):
-                    
-                    # Turn pH sensor circuit on
-                    gpio.transistorPH.off()
-                    
-                    time.sleep(0.1)
-                    
-                    # Read the pH sensor
-                    pH = pHsensor.getPH()
-                    print ("PH: {:.3f}".format(pH))    
-                    
-                    # Update database
-                    database.updatePH(pH)
-                    
-                # PH sensing is switched off
-                else:
-                    # Turn pH sensor circuit off
-                    gpio.transistorPH.on()                      
-                
-                # Check, if LEDs are switched on
-                if (userInput.ledState == True):
-                    
-                    # Get current time
-                    now = datetime.now()
-                    
-                    
-                    # Transform current time into timedelta (of that day)
-                    now = timedelta(hours = now.hour, minutes = now.minute)
-                    print(now)
-                    
-                    # If current time is between sunrise and sunset
-                    if( (now > userInput.sunrise) and (now < userInput.sunset) ):    
-                        
-                        print("Current time is between sunrise and sunset")                                        
-                    
-                        # If LEDs are set to auto adjust
-                        if (userInput.autoLedState == True):
-                            
-                            # Calculate LED intensity from visibleLight value
-                            ledIntensity = 1 - (visibleLight / 1000 / 15)
-                            
-                            if(abs(gpio.leds13.value - ledIntensity) > 0.05):
-                            
-                                while ((ledIntensity - gpio.leds13.value) > 0.005):                            
-                                
-                                    gpio.leds13.value += 0.001
-                                    gpio.leds15.value += 0.001
-                                    
-                                    time.sleep(0.001)
-                                    
-                                while ((gpio.leds13.value - ledIntensity) > 0.005):                            
-                                
-                                    gpio.leds13.value -= 0.001
-                                    gpio.leds15.value -= 0.001
-                                    
-                                    time.sleep(0.001)
-                                    
-                                # Set LED intensity
-                                # gpio.leds13.value = ledIntensity
-                                # gpio.leds15.value = ledIntensity
-                                
-                                print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
-                        
-                        # No auto adjust
-                        else:
-                            # Turn LEDs on
-                            gpio.leds13.value = 0.5
-                            gpio.leds15.value = 0.5
-                            
-                            print("Turned 1:3 LEDs to {0} % and 1:5 LEDs to {1} %".format(gpio.leds13.value*100, gpio.leds15.value*100))
-                            
-                    # Current time not between sunrise and sunset
-                    else:
-                        # Turn LEDs off
-                        gpio.leds13.off()
-                        gpio.leds15.off()
-                        
-                        print("LEDs switched off")
-                    
-                # LEDs not switched on
-                else: 
-                    # Turn LEDs off
-                    gpio.leds13.off()
-                    gpio.leds15.off()
-                    
-                    print("LEDs switched off")
+                    print("LED upward movement stopped")                
                     
                     
                 led_movement_was_on = False
@@ -825,6 +806,7 @@ def main():
                         led_movement_was_on = False
                     
                     
+                    
                 # EC level adaption     
                 # if( (meanECLevel < 60) and (waterLevelMainTankUpdates > 10) and (now.hour > userInput.sunrise.hour + 1) and (now.hour < userInput.sunset.hour + 1)):
                 
@@ -869,6 +851,9 @@ def main():
                         ecLevelUpdates = 0                     
                         
                         print("Nutrients refilled")
+                        
+                        # Next EC level detection in 10 min                        
+                        ecLevelDetectionInterval = 60*5                        
                                                                   
                         
                 # Time outside nutrient table
@@ -891,6 +876,9 @@ def main():
                         gpio.pumpFloraBloom.off()                                                  
                         
                         print("Nutrients refilled")
+                        
+                        # Next EC level detection in 10 min                        
+                        ecLevelDetectionInterval = 60*5  
     
 
             # System is switched off
@@ -914,6 +902,8 @@ def main():
                 gpio.transistor3V3.on()
                 
                 print("3.3 V and 5 V power circuits turned off")
+                
+                last_systemState = False
                 
                 time.sleep(0.1)
                 

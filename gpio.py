@@ -17,8 +17,10 @@ class GPIO:
 	pumpFloraClean = PWMLED(17)
 	
 	pumpPHdowner = PWMLED(27)
-	pumpWater = PWMLED(18)
 	pumpCirculation = PWMLED(8)
+	
+	pumpWaterSupply = PWMLED(10)
+	pumpWaterWithdrawal = PWMLED(9)
 	
 	ledUp = PWMLED(7)
 	ledDown = PWMLED(5)
@@ -67,14 +69,18 @@ class GPIO:
 		
 		# Turn the PH downer pump off 
 		self.pumpPHdowner.off()
-		print("Pump for FloraClean turned off")
-		
-		# Turn the Water pump off 
-		self.pumpWater.off()
-		print("Pump for FloraClean turned off")
+		print("Pump for FloraClean turned off")			
 		
 		# Turn the circulation pump off 
 		self.pumpCirculation.off()
+		print("Pump for FloraClean turned off")
+		
+		# Turn the Water pump off 
+		self.pumpWaterSupply.off()
+		print("Pump for FloraClean turned off")
+		
+		# Turn the Water pump off 
+		self.pumpWaterWithdrawal.off()
 		print("Pump for FloraClean turned off")
 		
 		

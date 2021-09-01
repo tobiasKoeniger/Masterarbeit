@@ -19,7 +19,8 @@ class WaterTemperatureSensor:
 
 	def getTemperature(self):
 		
-		chan = AnalogIn(self.ads, ADS.P0)
+		# Try to run the loop		
+		chan = AnalogIn(self.ads, ADS.P0)                    
 		
 		# print("Voltage Water sensor: {}".format(chan.voltage))
 		

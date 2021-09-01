@@ -22,6 +22,7 @@ from database import Database
 import time
 
 
+
 # Begin of main program
 def main():
 
@@ -104,6 +105,8 @@ def main():
 			# Catch an error message and display the message
 			except (KeyboardInterrupt, SystemExit):
 				cleanAndExit()
+				
+			time.sleep(10)
 			
 		# System is switched off
 		else:  

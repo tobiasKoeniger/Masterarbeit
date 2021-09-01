@@ -49,9 +49,12 @@ class EcSensor:
 
 	def getEC(self):
 		
+		time.sleep(0.3)
+		
 		waterTemperature = self.waterTemperatureSensor.getTemperature()
 		print ("Water temperature: {:.1f} °C".format(waterTemperature) )
 		
+		# time.sleep(0.3)
 		
 		#GPIO.output(5, GPIO.HIGH)
 		

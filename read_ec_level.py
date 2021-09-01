@@ -120,7 +120,7 @@ def main():
                 except (KeyboardInterrupt, SystemExit):
                     cleanAndExit()
                 
-                T = 7
+                T = 1
                 time.sleep(T)
                 
                 # for x in range(T):                   
