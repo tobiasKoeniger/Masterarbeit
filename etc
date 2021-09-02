@@ -1,0 +1,1 @@
+@reboot lxterminal -e "cd Software/Masterarbeit/; python3 start.py; read"

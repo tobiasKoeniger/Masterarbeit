@@ -17,13 +17,13 @@ class GPIO:
 	pumpFloraClean = PWMLED(17)
 	
 	pumpPHdowner = PWMLED(27)
-	pumpCirculation = PWMLED(8)
+	pumpCirculation = PWMLED(18)
 	
 	pumpWaterSupply = PWMLED(10)
 	pumpWaterWithdrawal = PWMLED(9)
 	
-	ledUp = PWMLED(7)
-	ledDown = PWMLED(5)
+	ledUp = PWMLED(15)
+	ledDown = PWMLED(14)
 	
 	leds13 = PWMLED(12)
 	leds15 = PWMLED(13)
