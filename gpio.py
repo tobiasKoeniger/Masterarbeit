@@ -8,7 +8,7 @@ class GPIO:
 	# According to BCM numbering
 	
 	transistor5V = LED(16)
-	transistor3V3 = LED(26)
+	transistor3V3 = LED(5)
 	transistorPH = LED(6)
 	
 	pumpFloraGro = PWMLED(24)

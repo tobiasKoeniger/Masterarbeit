@@ -70,7 +70,7 @@ def main():
     # Turn the circuits on for initialization
     gpio.transistor5V.off()
     gpio.transistor3V3.off()
-    gpio.transistorPH.off()
+    # gpio.transistorPH.off()
     print("All power circuits turned on")
     
     print("\nsuccessful")
@@ -377,7 +377,7 @@ def main():
                         # Reinitialize sensor
                         distance_sensor = DistanceSensor()
                         
-                        distance = distance_sensor.getDistance()
+                        distance = distance_sensor.getDistance()                                                
                         
                         tank_levels[i - 1] = distance
                         
