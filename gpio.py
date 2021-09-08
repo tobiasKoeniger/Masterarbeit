@@ -22,8 +22,8 @@ class GPIO:
 	pumpWaterSupply = PWMLED(10)
 	pumpWaterWithdrawal = PWMLED(9)
 	
-	ledUp = PWMLED(15)
-	ledDown = PWMLED(14)
+	ledUp = PWMLED(19)
+	ledDown = PWMLED(26)
 	
 	leds13 = PWMLED(12)
 	leds15 = PWMLED(13)

@@ -1,3 +1,6 @@
+
+# cd ~/Software/Masterarbeit; python3 start.py
+
 import os                                                                       
 from multiprocessing import Pool                                                
                                                                                 
