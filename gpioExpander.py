@@ -15,12 +15,12 @@ class GPIOExpander:
 		
 		self.mcp = MCP23017(self.i2c, address=0x27)  # MCP23017
 		
-		# Initialize Pins
+		# Initialize list of pins
 		# 0 to 15 for the GPIOA0...GPIOA7, GPIOB0...GPIOB7 pins (i.e. pin 12 is GPIOB4).
 		self.pin = []
 		
 		
-		# self.pinA0 = self.mcp.get_pin(0) # enable pin
+		# Append pins to list
 		self.pin.append(self.mcp.get_pin(0))
 		self.pin.append(self.mcp.get_pin(1))
 		self.pin.append(self.mcp.get_pin(2))
@@ -33,6 +33,7 @@ class GPIOExpander:
 		self.pin.append(self.mcp.get_pin(9))
 		
 		
+		# Switch pins to output and set value to False
 		self.pin[0].switch_to_output(value = False) 
 		self.pin[1].switch_to_output(value = False) 
 		self.pin[2].switch_to_output(value = False) 
@@ -45,19 +46,18 @@ class GPIOExpander:
 		self.pin[9].switch_to_output(value = False) 
 		
 		
-	# def setOutput(self, output_pin_number, pin_state):
-		
-		# self.pin[output_pin_number].value = pin_state
-		
-		
+	# Enable sensor
 	def setSensor(self, sensor_number):
 		
+		# Disable all sensors
 		for sensor in self.pin:
 			sensor.value = False
 			
+		# Enable the given sensor
 		self.pin[sensor_number].value = True
 		
-		
+	
+	# Disable all sensors
 	def cleanClose(self):
 		
 		for sensor in self.pin:

@@ -8,6 +8,7 @@ from userInput import UserInput
 class Database: 
 
 	
+	# Init database
 	def __init__(self):
 		
 		# userInput class to store user input data 
@@ -161,8 +162,9 @@ class Database:
 
 			
 		self.closeConnection()
+	
 		
-			
+	# Connect to database
 	def connectToDatabase(self):
 		
 		# Now, try to directly connect to the 'hydroponics' database
@@ -182,7 +184,8 @@ class Database:
 			
 		self.mycursor = self.mydb.cursor()
 			
-			
+	
+	# Update sensor values
 	def updateSensors(self, visibleLight, waterTemperature, distance1):
 		
 		self.connectToDatabase()
@@ -203,7 +206,8 @@ class Database:
 		
 		self.closeConnection()
 		
-		
+	
+	# Update EC level 
 	def updateEC(self, ec):
 		
 		self.connectToDatabase()
@@ -221,6 +225,7 @@ class Database:
 		self.closeConnection()	
 		
 	
+	# Update DHT22 values
 	def updateDHT22(self, temperature, humidity):
 		
 		self.connectToDatabase()
@@ -240,7 +245,8 @@ class Database:
 		
 		self.closeConnection()		
 			
-			
+	
+	# Update pH level
 	def updatePH(self, pH):
 		
 		self.connectToDatabase()
@@ -257,7 +263,8 @@ class Database:
 		
 		self.closeConnection()		
 		
-		
+	
+	# Get user input from database
 	def getUserInput(self):
 		
 		self.connectToDatabase()
@@ -291,6 +298,7 @@ class Database:
 		return self.userInput		
 		
 		
+	# Get EC level from database
 	def getEC(self):
 		
 		self.connectToDatabase()
@@ -322,6 +330,7 @@ class Database:
 		return ec_level		
 		
 	
+	# Close database connection 
 	def closeConnection(self):
 		
 		# Close all database connections

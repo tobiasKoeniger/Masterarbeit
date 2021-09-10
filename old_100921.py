@@ -30,3 +30,35 @@ waterLevelMainTankUpdates += 1
                     
                     print("Sensor init finished")
                     print("--------------------\n")
+                    
+                    
+                    
+                    
+                    
+    # Mitigate error
+    # if (led_movement_was_on == True):
+        
+        # time.sleep(0.5)
+        
+        # # Reinitialize sensor
+        # mainTankLevelSensor = DistanceSensor()
+        # print("Main tank sensor reinitialized")
+        
+        # led_movement_was_on = False
+        
+        
+        
+        # self.ads.mode = Mode.CONTINUOUS
+		
+		# self.transistor5V = LED(16)
+		# self.transistor3V3 = LED(26)
+        
+        
+        
+        		
+		# self.transistor5V.off()
+		# print("5 V circuit powered on")
+
+		# self.transistor3V3.off()
+		# print("3.3 V circuit powered on")
+                    

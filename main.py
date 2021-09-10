@@ -493,7 +493,7 @@ def main():
                     
                                         
                 # Turn the circulation pump on to 30 % (most silent)
-                gpio.pumpCirculation.value = 0.3
+                gpio.pumpCirculation.value = 0.0 # 0.3
                 print("Turning the circulation pump on to {} %".format(gpio.pumpCirculation.value*100))
                 
                                                         
@@ -794,17 +794,7 @@ def main():
                     # Disable motor                   
                     gpio.ledUp.off()
                     print("LED upward movement stopped")
-                    
-                    if (led_movement_was_on == True):
-                        
-                        time.sleep(0.5)
-                        
-                        # Reinitialize sensor
-                        mainTankLevelSensor = DistanceSensor()
-                        print("Main tank sensor reinitialized")
-                        
-                        led_movement_was_on = False
-                    
+                                                            
                 
                 # Check, if the LED Down button is being pressed    
                 while (userInput.ledDown == True):
@@ -823,16 +813,6 @@ def main():
                 else:
                     gpio.ledDown.off()
                     print("LED downward movement stopped")
-                    
-                    if (led_movement_was_on == True):
-                        
-                        time.sleep(0.5)
-                        
-                        # Reinitialize sensor
-                        mainTankLevelSensor = DistanceSensor()
-                        print("Main tank sensor reinitialized")
-                        
-                        led_movement_was_on = False
                                                                 
                 
                 # Get current time as date object
@@ -848,7 +828,7 @@ def main():
                 # Get the current time                
                 now = datetime.now()
                     
-                # Time inside nutrient table
+                # Current week number within nutrient table?
                 if (elapsed_weeks < 9):
                     
                     print("EC level desired: {}".format(nutrientTable[3][elapsed_weeks]))
@@ -871,9 +851,7 @@ def main():
                         
                         gpio.pumpFloraBloom.value = 0.2                                                
                         time.sleep(nutrientTable[3][elapsed_weeks]) 
-                        gpio.pumpFloraBloom.off()   
-                        
-                        ecLevelUpdates = 0                     
+                        gpio.pumpFloraBloom.off()                      
                         
                         print("Nutrients refilled")
                         
@@ -907,7 +885,7 @@ def main():
                         
                         
                 # Start up over
-                start_up = false
+                start_up = False
     
 
             # System is switched off
@@ -932,12 +910,14 @@ def main():
                 
                 print("3.3 V and 5 V power circuits turned off")
                 
+                # Safe system state
                 last_systemState = False
                 
+                # Wait 0.1 for new user input
                 time.sleep(0.1)
                 
             
-            print()
+            print("\n")
                         
 
         # Catch an error message and display the message

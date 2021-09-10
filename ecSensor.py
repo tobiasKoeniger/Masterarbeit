@@ -21,131 +21,104 @@ class EcSensor:
 		self.i2c = busio.I2C(board.SCL, board.SDA)
 
 		self.ads = ADS.ADS1115(self.i2c)
+		
+		# Full range measurement
 		self.ads.gain = 2/3
-		# self.ads.mode = Mode.CONTINUOUS
 		
-		# self.transistor5V = LED(16)
-		# self.transistor3V3 = LED(26)
-		
-		# BCM numbering		
+		# BCM numbering: initialize EC transistors
 		self.transistorEC = LED(21)
 		self.transistorAntiEC = LED(20)
 		
+		# Initialize water temperature sensor
 		print("Water temperature sensor init.. ", end = '')
 		self.waterTemperatureSensor = WaterTemperatureSensor()
 		print("successful \n")
 		
-		# self.transistor5V.off()
-		# print("5 V circuit powered on")
-
-		# self.transistor3V3.off()
-		# print("3.3 V circuit powered on")
-		
+		# Disable EC circuits
 		self.transistorEC.off()
 		self.transistorAntiEC.off()
-		#GPIO.output(5, GPIO.LOW)
 		print("EC meter powered off")		
 				
 
 	def getEC(self):
 		
+		# Let the voltage settle
 		time.sleep(0.3)
 		
+		# Get the water temperature
 		waterTemperature = self.waterTemperatureSensor.getTemperature()
 		print ("Water temperature: {:.1f} °C".format(waterTemperature) )
 		
-		# time.sleep(0.3)
-		
-		#GPIO.output(5, GPIO.HIGH)
-		
+		# EC reading time: 1 ms
 		T = 0.001
 		
-		
-		# chan = AnalogIn(self.ads, ADS.P1)
-		
-		# time.sleep(0.03)
-		
-		timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
-		
-		self.transistorEC.on()
+		# Calculate times
 		beginTime = round(time.time() * 1000 * 1000) 
+		# timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
 		
-		while (round(time.time() * 1000 * 1000) < timeEnd):			
+		# Turn EC circuit on 
+		self.transistorEC.on()				
 		
-			chan = AnalogIn(self.ads, ADS.P1)		
-			u = chan.voltage	
-			
-			mil = abs( beginTime - round(time.time() * 1000 * 1000) )
-			print("voltage: {0:.3f} V after {1} mus".format(u, mil))
+		# Read sensor
+		# while (round(time.time() * 1000 * 1000) < timeEnd):			
 		
-		# time.sleep(T)
-
-		# u = chan.voltage
+		# Read voltage
+		chan = AnalogIn(self.ads, ADS.P1)		
+		u = chan.voltage	
 		
+		# Turn circuit off
 		self.transistorEC.off()
 		
+		# Measure passed time
+		mil = abs( beginTime - round(time.time() * 1000 * 1000) )
+		print("voltage: {0:.3f} V after {1} mus".format(u, mil))
 		
 		
-		
-		
-		timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
-		
-		self.transistorAntiEC.on()
+		# Calculate times
 		beginTime = round(time.time() * 1000 * 1000) 
+		# timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
 		
-		while (round(time.time() * 1000 * 1000) < timeEnd):			
+		# Turn opposed EC circuit on 
+		self.transistorAntiEC.on()
 		
-			chan = AnalogIn(self.ads, ADS.P1)		
-			k = chan.voltage	
-			
-			mil = abs( beginTime - round(time.time() * 1000 * 1000) )
-			print("voltage: {0:.2f} V after {1} mus".format(k, mil))
+		# while (round(time.time() * 1000 * 1000) < timeEnd):			
 		
-		# time.sleep(T)
+		# Read voltage
+		chan = AnalogIn(self.ads, ADS.P1)		
+		k = chan.voltage	
 		
+		# Turn circuit off
 		self.transistorAntiEC.off()
 		
-
-		#print(chan.value, chan.voltage)
+		# Measure passed time
+		mil = abs( beginTime - round(time.time() * 1000 * 1000) )
+		print("voltage: {0:.2f} V after {1} mus".format(k, mil))
 		
-		#transistorEC.off()
-		#GPIO.output(5, GPIO.LOW)
 		
-		u_power = 3.283 #3.314 #3.283
-		resistance_R1 = 470 # 3594 # 470 # 1301 # 470
-		# resistance_R1 = 357.1
-		# resistance_R1 = 674
-		# resistance_R1 = 988
-		# resistance_R1 = 3584
+		# Supplied voltage
+		u_power = 3.283 
+		
+		# Resistance R1
+		resistance_R1 = 470 
 
 		# resistance in ohm
 		r = ( (u * resistance_R1) / (u_power - u) ) - 1000
 		kohm = r/1000
 		print("resistance: {:.3f} kOhm".format(kohm))
 
-		#print("resistance: {} Ohm".format(r))
-		# mS/cm
-		# cell_constant = 25/18
+		# Calculate cell constant for calibration (ec level assumed 0.7)
 		cell_constant_calculated = 0.7 / ((1/r) * 1000)
 		print("cell constant: {:.4f}".format(cell_constant_calculated))
 		
-		# cell_constant = 1.389
-		
-		# cell_constant = 0.206
-		
+		# Set cell constant
 		cell_constant = 0.7213
-		
-		# cell_constant = 0.1584
-		
-		# cell_constant = 0.0671
-		
-		# cell_constant = 3.4937
-		ec_raw = (cell_constant) * (1/r) * 1000
 
+		# Calculate raw ec level
+		ec_raw = (cell_constant) * (1/r) * 1000
 		print("ec raw: {:.4f} mS/cm".format(ec_raw))
 
 
-		# temperature compensation
+		# Temperature compensation
 		T = waterTemperature
 		ec25 = ec_raw / (1 + 0.019*(T-25))
 		print("ec 25: {:.4f} mS/cm".format(ec25))
@@ -153,19 +126,9 @@ class EcSensor:
 		
 		# linear correction
 		# ec = 0.642 + ( (1.59 - 0.642) / (1.36 - 0.93) ) * (ec25 - 0.93)
-		
-		# ec = 0.32 + ( (2.4 - 0.32) / (0.7746 - 0.6714) ) * (ec25 - 0.6714)
-		
 		ec = 2.20408 * ec25 - 0.90306
 
-		print("final ec: {:.2f} mS/cm".format(ec))
-
-		print()
-		
-		#transistorEC.off()
-		#GPIO.output(5, GPIO.LOW)
-
-		time.sleep(0)
+		print("EC after interpolation: {:.2f} mS/cm \n".format(ec))
 
 
 		return u
