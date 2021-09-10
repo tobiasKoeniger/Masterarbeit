@@ -270,7 +270,8 @@ class Database:
 
 		# Print the table
 		for x in result:
-			print(x)
+			pass
+			# print(x)
 
 		# Copy the userInput data into the userInput class
 		self.userInput.time = x[0]
@@ -301,8 +302,8 @@ class Database:
 		result = self.mycursor.fetchall()
 
 		# Print the table
-		for x in result:
-			print(x)
+		# for x in result:
+			# print(x)
 
 		# Copy the userInput data into the userInput class
 		ec_level = x[5]

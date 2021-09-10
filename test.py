@@ -26,9 +26,9 @@ transistor3V3.off()
 print("3.3 V circuit powered on")
 
 
-pumpCirculation = PWMLED(24)
+pumpCirculation = PWMLED(9)
 
-pumpCirculation.value = 0.5
+pumpCirculation.value = 1
 
 time.sleep(10000)
 
