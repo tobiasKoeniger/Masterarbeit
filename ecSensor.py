@@ -46,21 +46,20 @@ class EcSensor:
 		time.sleep(0.3)
 		
 		# Get the water temperature
+		# The water temperature reading "prepares" the I2C bus for the EC reading
+		# The reading helps to get a replicable EC reading time thereby increasing 
+		# the sensor's accuracy.
 		waterTemperature = self.waterTemperatureSensor.getTemperature()
 		print ("Water temperature: {:.1f} °C".format(waterTemperature) )
 		
 		# EC reading time: 1 ms
 		T = 0.001
 		
-		# Calculate times
+		# Save begin time
 		beginTime = round(time.time() * 1000 * 1000) 
-		# timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
 		
 		# Turn EC circuit on 
-		self.transistorEC.on()				
-		
-		# Read sensor
-		# while (round(time.time() * 1000 * 1000) < timeEnd):			
+		self.transistorEC.on()						
 		
 		# Read voltage
 		chan = AnalogIn(self.ads, ADS.P1)		
@@ -74,14 +73,11 @@ class EcSensor:
 		print("voltage: {0:.3f} V after {1} mus".format(u, mil))
 		
 		
-		# Calculate times
-		beginTime = round(time.time() * 1000 * 1000) 
-		# timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
+		# Save begin time
+		beginTime = round(time.time() * 1000 * 1000) 		
 		
 		# Turn opposed EC circuit on 
-		self.transistorAntiEC.on()
-		
-		# while (round(time.time() * 1000 * 1000) < timeEnd):			
+		self.transistorAntiEC.on()	
 		
 		# Read voltage
 		chan = AnalogIn(self.ads, ADS.P1)		

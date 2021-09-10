@@ -61,4 +61,20 @@ waterLevelMainTankUpdates += 1
 
 		# self.transistor3V3.off()
 		# print("3.3 V circuit powered on")
+        
+        
+        
+        # timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
+        
+        
+        		
+		# Read sensor
+		# while (round(time.time() * 1000 * 1000) < timeEnd):	
+        
+        
+        # timeEnd = round(time.time() * 1000 * 1000) + T*1000*1000
+        
+        
+        		
+		# while (round(time.time() * 1000 * 1000) < timeEnd):		
                     
