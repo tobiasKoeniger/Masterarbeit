@@ -103,11 +103,11 @@ class EcSensor:
 		print("resistance: {:.3f} kOhm".format(kohm))
 
 		# Calculate cell constant for calibration (ec level assumed 0.7)
-		cell_constant_calculated = 0.7 / ((1/r) * 1000)
+		cell_constant_calculated = 0.64 / ((1/r) * 1000)
 		print("cell constant: {:.4f}".format(cell_constant_calculated))
 		
 		# Set cell constant
-		cell_constant = 0.7213
+		cell_constant = 1.8654
 
 		# Calculate raw ec level
 		ec_raw = (cell_constant) * (1/r) * 1000
@@ -122,12 +122,21 @@ class EcSensor:
 		
 		# linear correction
 		# ec = 0.642 + ( (1.59 - 0.642) / (1.36 - 0.93) ) * (ec25 - 0.93)
-		ec = 2.20408 * ec25 - 0.90306
+		# ec = 2.20408 * ec25 - 0.90306
+		
+		if (ec25 < 0.931):
+			ec = 2.34657*ec25 - 0.894657
+			
+		else:
+			ec = 3.3787466*ec25 - 1.855613
+			
+		# ec = 2.34657*ec25 - 0.894657
+		# ec = 3.3787466*ec25 - 1.855613
 
 		print("EC after interpolation: {:.2f} mS/cm \n".format(ec))
 
 
-		return u
+		return ec
 		
 	
 		

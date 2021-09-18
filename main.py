@@ -77,17 +77,25 @@ def main():
     # Set the main tank sensor as default
     gpioExpander.setSensor(0)
     print("successful")
+    time.sleep(0.1)
+    
+    # Debug point for distance sensors
+    # time.sleep(100000000)
     
     # Light sensor
     print("Light sensor init.. ", end = '')
     lightSensor = LightSensor()
     print("successful")
     
-    # Water sensor      
-    print("Water temperature sensor init.. ", end = '')
-    waterTemperatureSensor = WaterTemperatureSensor()
-    print("successful")
-    
+    try: 
+        # Water sensor      
+        print("Water temperature sensor init.. ", end = '')
+        waterTemperatureSensor = WaterTemperatureSensor()
+        print("successful")
+        
+    except (KeyboardInterrupt, SystemExit, OSError):      
+        print("Skipping main tank sensor")
+        
     # Distance sensor
     print("Distance sensor init.. ", end = '')
     mainTankLevelSensor = DistanceSensor()
@@ -117,8 +125,13 @@ def main():
     # Buffer to save the readings
     ecLevelBuffer = [2] * ecLevelRepetitions
     
-    # Interval between ec level detections is 1h = 60 * 60 s
-    ecLevelDetectionInterval = 60 * 60 
+    # Interval between ec level detections is set later to 1h = 60 * 60 s
+    ecLevelDetectionInterval = 0
+    
+    ecReadingNumber = 0     
+    
+    # Default EC level
+    ecLevel = 100       
     
     
     # Buffer for main tank's water level sensor: 10 repetitions
@@ -142,12 +155,25 @@ def main():
     nutrientTable = [[1, 1, 1, 1.5, 1.5, 1, 0.5, 0.5, 0.5],     # FloraGro
                      [1, 1, 1, 1, 1, 1, 1, 1, 1],               # FloraMicro
                      [1, 1, 1, 0.5, 0.5, 1, 1.5, 1.5, 1.5],     # FloraBloom
-                     [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]
-        
+                     [0.7, 0.8, 0.8, 0.9, 1, 1, 1, 1, 1]]       # EC level
+                     
+                     
+    # Variables for last sensor readings                    
+    last_plantHeight_detection = datetime.now()
     
-    # Turn PH sensor off
-    gpio.transistorPH.on()
-    print("PH meter circuit turned off\n\n")
+    last_tankLevel_detection = datetime.now() 
+    
+    last_ecLevel_detection = datetime.now() 
+    
+    last_dth22_detection = datetime.now()     
+                        
+    
+    # List to save plant height sensors' reading
+    plant_heights = [0, 0, 0]  
+    
+    # List to save tank levels of each tank
+    tank_levels = [0, 0, 0, 0, 0, 0]
+                     
     
 
     # If one manually closes the program with Ctrl+c:
@@ -167,9 +193,6 @@ def main():
         # Close the program
         sys.exit()
 
-
-    # Get current user input from the database
-    userInput = database.getUserInput()  
     
     # Starting system
     start_up = True
@@ -320,30 +343,7 @@ def main():
 
 
                 # Initialize control variables at system start up
-                if(start_up == True):
-                    
-                    # Variables for last sensor readings                    
-                    last_plantHeight_detection = datetime.now()
-                    
-                    last_tankLevel_detection = datetime.now() 
-                    
-                    last_ecLevel_detection = datetime.now() 
-                    
-                    last_dth22_detection = datetime.now() 
-                    
-                    
-                    ecReadingNumber = 0 
-                                        
-                    
-                    # List to save plant height sensors' reading
-                    plant_heights = [0, 0, 0]  
-                    
-                    # List to save tank levels of each tank
-                    tank_levels = [0, 0, 0, 0, 0, 0]
-                             
-                    
-                    # Default EC level
-                    ecLevel = 100                                               
+                if(start_up == True):                                                                            
                     
                     # Print banner
                     print("\nInitial sensor init")
@@ -477,19 +477,14 @@ def main():
                     
                     time.sleep(3)
                     
+                    # Turn pump off
                     gpio.pumpWaterSupply.off()
                     
                     # Refresh the main tank's level in 60 seconds
                     tankLevelDetectionInterval = 60
                     
                     # Wait for the main tank level reading before the pump is switched on again
-                    waitingOnTankLevelDetection = True                                                            
-                    
-                    
-                # Turn water refill pump off
-                else:
-                    gpio.pumpWaterSupply.off()
-                    
+                    waitingOnTankLevelDetection = True                                                                            
                     
                                         
                 # Turn the circulation pump on to 30 % (most silent)
@@ -518,7 +513,7 @@ def main():
                     print ("Temperature: {:.1f} °C".format(temperature) )
                     
                     # Write to database
-                    database.updateDHT22(humidity, temperature)
+                    database.updateDHT22(temperature, humidity)
                     
                     # Save time
                     last_dth22_detection = datetime.now()                                    
@@ -529,7 +524,7 @@ def main():
                                                 
                 # Detect plant height if the detection interval is up
                 # The time since the last detection was already calculated above
-                if(time_delta_plantHeight.seconds > 60 * 60): # 60*60
+                if( (start_up == True) or (time_delta_plantHeight.seconds > 60 * 60) ): # 60*60
                     
                     # Loop through the sensors
                     for i in range(7, 10):
@@ -578,131 +573,139 @@ def main():
                 #################################
                 # EC level detection not in a row
                 
-                # Waiting time between individual measurements
-                timeBetweenECMeasurements = 15 # 30                    
+                # # Waiting time between individual measurements
+                # timeBetweenECMeasurements = 15 # 30                    
                 
-                # Time of next reading
-                nextECReading = timeBetweenECMeasurements * ecReadingNumber + 6            
-                print("nextECReading: {}".format(nextECReading))
+                # # Time of next reading
+                # nextECReading = timeBetweenECMeasurements * ecReadingNumber + 6 + ecLevelDetectionInterval
+                       
+                # print("nextECReading: {}".format(nextECReading))
                 
-                # If one reading sequence has not been completed and the interval between readings is up:
-                if((ecReadingNumber < ecLevelRepetitions) and (time_delta_ecLevel.seconds > nextECReading)): # 10
+                # # If one reading sequence has not been completed and the interval between readings is up:
+                # if((ecReadingNumber < ecLevelRepetitions) and (time_delta_ecLevel.seconds > nextECReading)): 
 
-                    # Try to make a measurement
-                    try:
+                    # # Try to make a measurement
+                    # try:
                         
-                        # Print reading number
-                        print(str(ecReadingNumber + 1)*90)
-                        print("\n\nEC Reading No. {}".format(ecReadingNumber + 1))
+                        # # Print reading number
+                        # print(str(ecReadingNumber + 1)*90)
+                        # print("\n\nEC Reading No. {}".format(ecReadingNumber + 1))
                         
-                        # Wait for voltage stabilization
-                        time.sleep(0.2)
+                        # # Wait for voltage stabilization
+                        # time.sleep(0.2)
                         
-                        # Read the sensor
-                        ecLevelReading = ecsensor.getEC()                
+                        # # Read the sensor
+                        # ecLevelReading = ecsensor.getEC()                
                         
-                        # Set first value of buffer                
-                        ecLevelBuffer[0] = ecLevelReading                
+                        # # Set first value of buffer                
+                        # ecLevelBuffer[0] = ecLevelReading                
                         
-                        # Rotate buffer
-                        ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]         
+                        # # Rotate buffer
+                        # ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]         
                         
-                        print("ecLevelBuffer: {}".format(ecLevelBuffer))                                                                                                                                               
+                        # print("ecLevelBuffer: {}".format(ecLevelBuffer))                                                                                                                                               
 
-                        # Reading number up
-                        ecReadingNumber += 1
+                        # # Reading number up
+                        # ecReadingNumber += 1
                                                                             
-                    # Catch an error message and display the message
-                    except (KeyboardInterrupt, SystemExit):
-                        cleanAndExit()
+                    # # Catch an error message and display the message
+                    # except (KeyboardInterrupt, SystemExit):
+                        # cleanAndExit()
                                         
-                # If all readings of one detection cycle were concluded 
-                if(ecReadingNumber >= ecLevelRepetitions):
+                # # If all readings of one detection cycle were concluded 
+                # if(ecReadingNumber >= ecLevelRepetitions):
                                     
-                    # print(ecLevelBuffer)                              
+                    # # print(ecLevelBuffer)                              
                     
-                    # print(ecLevelBuffer[1:ecLevelRepetitions])
-                    # print((len(ecLevelBuffer) - 1))
+                    # # print(ecLevelBuffer[1:ecLevelRepetitions])
+                    # # print((len(ecLevelBuffer) - 1))
                     
-                    # Calculate mean water level
-                    # ecLevel = sum(ecLevelBuffer[1:ecLevelRepetitions]) / (len(ecLevelBuffer) - 1)
-                    # ecLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+                    # # Calculate mean water level
+                    # # ecLevel = sum(ecLevelBuffer[1:ecLevelRepetitions]) / (len(ecLevelBuffer) - 1)
+                    # # ecLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
                     
-                    ecLevel = median(ecLevelBuffer)
+                    # # Calculate median
+                    # ecLevel = median(ecLevelBuffer)
                     
-                    database.updateEC(ecLevel)                                                                            
-                                            
-                    ecReadingNumber = 0                
+                    # # Update database
+                    # database.updateEC(ecLevel)    
                     
-                    last_ecLevel_detection = datetime.now()   
+                    # # Set detection interval
+                    # ecLevelDetectionInterval = 60 * 60                                                                        
+                                    
+                    # # Restart counting
+                    # ecReadingNumber = 0                
                     
-                    print("===================================================================================") 
+                    # # Save time
+                    # last_ecLevel_detection = datetime.now()                       
+                    
+                    # print("===================================================================================") 
             
-                    print("Current EC level median: {:.3f}".format(ecLevel))    
+                    # print("Current EC level median: {:.3f}".format(ecLevel))    
                 
                 
                 #############################
                 # EC level detection in a row
                 
-                # # If the interval is up or start up true
-                # if((time_delta_ecLevel.seconds > ecLevelDetectionInterval) or (start_up == True)): # 60*60  
+                # If the interval is up or start up true
+                if((time_delta_ecLevel.seconds > ecLevelDetectionInterval) or (start_up == True)): # 60*60  
                     
-                    # # Reset detection interval
-                    # ecLevelDetectionInterval = 60*60 
+                    # Reset detection interval
+                    ecLevelDetectionInterval = 60*60 
                     
-                    # # Let the voltage settle
-                    # time.sleep(3)                                                      
+                    # Let the voltage settle
+                    time.sleep(3)                                                      
                 
-                    # # Set reading number
-                    # readingNumber = 0
+                    # Set reading number
+                    readingNumber = 0
                     
-                    # # Drop the first three readings
-                    # while(readingNumber < ecLevelRepetitions + 3): 
+                    # Drop the first three readings
+                    while(readingNumber < ecLevelRepetitions + 3): 
             
-                        # # Try to run the loop
-                        # try:
+                        # Try to run the loop
+                        try:
                             
-                            # print("\n\nEC Reading No. {}".format(readingNumber + 1))
+                            print("\n\nEC Reading No. {}".format(readingNumber + 1))
                             
-                            # # Read sensor
-                            # ecLevelReading = ecsensor.getEC()                
+                            # Read sensor
+                            ecLevelReading = ecsensor.getEC()                
                             
-                            # # Set first value of buffer                
-                            # ecLevelBuffer[0] = ecLevelReading                
+                            # Set first value of buffer                
+                            ecLevelBuffer[0] = ecLevelReading                
                             
-                            # # Rotate buffer
-                            # ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]                                                                                                                                                         
+                            # Rotate buffer
+                            ecLevelBuffer = ecLevelBuffer[-1:] + ecLevelBuffer[:-1]                                                                                                                                                         
 
-                            # # Adjust reading number
-                            # readingNumber += 1
+                            # Adjust reading number
+                            readingNumber += 1
                                                         
                             
-                        # # Catch an error message and display the message
-                        # except (KeyboardInterrupt, SystemExit):
-                            # cleanAndExit()
+                        # Catch an error message and display the message
+                        except (KeyboardInterrupt, SystemExit):
+                            cleanAndExit()
                         
                         
-                        # # Sleep for the ions to settle
-                        # T = 1
-                        # time.sleep(T)                        
+                        # Sleep for the ions to settle
+                        T = 1
+                        time.sleep(T)                        
                     
                     
-                    # # Print buffer
-                    # print(ecLevelBuffer)    
+                    # Print buffer
+                    print(ecLevelBuffer)    
                     
-                    # # Calculate mean water level
-                    # # ecLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
+                    # Calculate mean water level
+                    # ecLevel = sum(ecLevelBuffer) / len(ecLevelBuffer)
                     
-                    # # Calculate median
-                    # ecLevel = median(ecLevelBuffer)
+                    # Calculate median
+                    ecLevel = median(ecLevelBuffer)
             
-                    # print("Current EC level median: {:.3f}".format(ecLevel))
+                    print("Current EC level median: {:.3f}".format(ecLevel))
                     
-                    # # Update database
-                    # database.updateEC(ecLevel)  
+                    # Update database
+                    database.updateEC(ecLevel)  
                     
-                    # # Save time
-                    # last_ecLevel_detection = datetime.now()
+                    # Save time
+                    last_ecLevel_detection = datetime.now()
                                                                                                                                      
                 
                 # Check, if pH sensing is switched on 
@@ -785,9 +788,7 @@ def main():
                     time.sleep(0.5)
                     
                     # Check userInput data again
-                    userInput = database.getUserInput()     
-                    
-                    led_movement_was_on = True                                     
+                    userInput = database.getUserInput()                                                     
                     
                 # Button not pressed
                 else: 
@@ -805,9 +806,7 @@ def main():
                     time.sleep(0.5)
                     
                     # Check userInput data
-                    userInput = database.getUserInput()                
-                    
-                    led_movement_was_on = True                    
+                    userInput = database.getUserInput()                                
                     
                 # Button not pressed
                 else:

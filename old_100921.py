@@ -77,4 +77,23 @@ waterLevelMainTankUpdates += 1
         
         		
 		# while (round(time.time() * 1000 * 1000) < timeEnd):		
+        
+        
+        
+                
+    #### line 146:
+    # Turn PH sensor off
+    gpio.transistorPH.on()
+    print("PH meter circuit turned off\n\n")
+    
+    
+                        
+                    
+                # Turn water refill pump off
+                else:
+                    gpio.pumpWaterSupply.off()
+                    
+                    
+    led_movement_was_on = True      
+    led_movement_was_on = True      
                     
