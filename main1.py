@@ -1,22 +1,13 @@
 #! /usr/bin/python3
 
-# Loading message
-print("\n")
-print("Libraries loading")
-
-# Loading libraries
+# Import libraries
 import time
-from datetime import datetime 
+from datetime import datetime
 from datetime import timedelta
 import sys
-
 from statistics import median
 
-# MySQL library
-import mysql.connector
-
-
-# Load sensor classes
+# Import classes
 from dht22 import DHT22
 from lightSensor import LightSensor
 from waterTemperatureSensor import WaterTemperatureSensor
@@ -24,10 +15,8 @@ from distanceSensor import DistanceSensor
 from pHsensor import PHsensor
 from ecSensor import EcSensor
 
-
 # Load GPIO expander class
 from gpioExpander import GPIOExpander
-
 # Load gpio class
 from gpio import GPIO
 
@@ -43,13 +32,12 @@ def main():
     print("Hydroponics Software Start")
     print()
 
-
     # Initialize classes
 
-    # Database class initialization    
-    print("Database init.. ", end = '\n\n')
+    # Database class initialization
+    print("Database init.. ", end='\n\n')
     database = Database()
-    print("\nsuccessful\n")    
+    print("\nsuccessful\n")
         
     
     # Initialize the GPIO class
@@ -712,7 +700,7 @@ def main():
                     last_ecLevel_detection = datetime.now()
                                                                  
                                                                  
-                ecLevel = 20                                                                                                                  
+                                                                                                                                  
                 
                 # Check, if pH sensing is switched on 
                 if(userInput.pHmeasureState == True):
