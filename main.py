@@ -261,6 +261,7 @@ def main():
                 
                 # Read the water temperature sensor
                 try: 
+                    waterTemperatureSensor.ads.gain = 2
                     waterTemperature = waterTemperatureSensor.getTemperature()
                     print ("Water temperature: {:.1f} °C".format(waterTemperature) )
                     
@@ -287,15 +288,19 @@ def main():
                         print("Current time is between sunrise and sunset")                                        
                     
                         # If LEDs are set by the user to auto adjust
-                        if (userInput.autoLedState == True):
+                        if (userInput.autoLedState == True):                            
                             
                             # Calculate LEDs' target intensity (between 0 and 1) 
                             # from the measured visible light value.
                             # Light target intensity collectively: 150 lux
                             ledIntensity = 1 - (visibleLight / 150 / 100)
                             
+                            ledIntensity = max(ledIntensity, 0)
+                            
                             # If there is more than a 5 % difference between the measured light intensity and the target value
                             if(abs(gpio.leds13.value - ledIntensity) > 0.05):
+                                
+                                print("True")
 
                                 # Adjust the LEDs' intensity upwards by 0.1 %
                                 # as long as there is a 0.5 % deviation.
@@ -305,17 +310,67 @@ def main():
                                     gpio.leds13.value += 0.001
                                     gpio.leds15.value += 0.001
                                     
+                                    gpio.leds13.value = round(gpio.leds13.value, 3)
+                                    gpio.leds15.value = round(gpio.leds15.value, 3)                                
+                                    
                                     time.sleep(0.001)
+                                    
+                                    # Read the light sensor values
+                                    [full_spectrum, infrared] = lightSensor.getValues()
+                                    
+                                    # Calculate the share of visible light
+                                    visibleLight = full_spectrum - infrared
+                                    
+                                    ledIntensity = 1 - (visibleLight / 150 / 100)
+                                    
+                                    ledIntensity = round(ledIntensity, 3)
+                                    
+                                    ledIntensity = max(ledIntensity, 0)
+                                    
+                                    # print("LED intensity: {}".format(ledIntensity))
+                                    # print("{0}, {1}, {2}".format (gpio.leds13.value, ledIntensity, visibleLight))
+                                    # print("gpio.leds13.value: {}".format(gpio.leds13.value))
                                 
                                 # Adjust the LEDs' intensity downwards    
                                 while ((gpio.leds13.value - ledIntensity) > 0.005):                            
                                 
+                                    # if (gpio.leds13.value > 0 and gpio.leds15.value > 0):
+
                                     gpio.leds13.value -= 0.001
                                     gpio.leds15.value -= 0.001
                                     
+                                    gpio.leds13.value = round(gpio.leds13.value, 3)
+                                    gpio.leds15.value = round(gpio.leds15.value, 3)
+                                    
                                     time.sleep(0.001)
+                                    
+                                    # Read the light sensor values
+                                    [full_spectrum, infrared] = lightSensor.getValues()
+                                    
+                                    # Calculate the share of visible light
+                                    visibleLight = full_spectrum - infrared
+                                    
+                                    ledIntensity = 1 - (visibleLight / 150 / 100)
+                                    
+                                    ledIntensity = round(ledIntensity, 3)
+                                    
+                                    ledIntensity = max(ledIntensity, 0)
+                                    
+                                    # print("LED intensity: {}".format(ledIntensity))
+                                    # print("gpio.leds13.value: {}".format(gpio.leds13.value))
+                                    
+                                    # print("{0}, {1}, {2}".format (gpio.leds13.value, ledIntensity, visibleLight))
+                                    
+                                print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))       
                                 
-                                print("Turned 1:3 LEDs to {0:.0f} % and 1:5 LEDs to {1:.0f} %".format(gpio.leds13.value*100, gpio.leds15.value*100))                            
+                                
+                                if ((gpio.leds13.value - ledIntensity) == 0.005):
+                                    
+                                    gpio.leds13.value = 0
+                                    gpio.leds15.value = 0
+                                    
+                                    # print("{0}, {1}, {2}".format (gpio.leds13.value, ledIntensity, visibleLight))
+                                                         
                         
                         # LEDs are not set to auto adjust
                         else:
@@ -807,7 +862,7 @@ def main():
                 while (userInput.ledDown == True):
                     
                     gpio.ledDown.value = 1                
-                    print("Moving the LEDs up with {} % power".format(gpio.ledDown.value*100))
+                    print("Moving the LEDs down with {} % power".format(gpio.ledDown.value*100))
                     
                     time.sleep(0.5)
                     

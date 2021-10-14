@@ -16,7 +16,8 @@ class WaterTemperatureSensor:
 		self.ads = ADS.ADS1115(self.i2c)
 		
 		# Enable the full range measurement (measure more than 5 V)
-		self.ads.gain = 2/3
+		# self.ads.gain = 2/3
+		self.ads.gain = 2
 		
 		
 	# Read temperature
@@ -28,7 +29,9 @@ class WaterTemperatureSensor:
 		# print("Voltage Water sensor: {}".format(chan.voltage))
 		
 		# supply voltage
-		supplyVoltage = 3.3
+		supplyVoltage = 3.25
+		
+		print(chan.voltage)
 		
 		# calculate resistance
 		resistance = (chan.voltage * 10) / (supplyVoltage - chan.voltage)

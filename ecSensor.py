@@ -53,6 +53,7 @@ class EcSensor:
 		# The water temperature reading "prepares" the I2C bus for the EC reading
 		# The reading helps to get a replicable EC reading time thereby increasing 
 		# the sensor's accuracy.
+		self.waterTemperatureSensor.ads.gain = 2/3
 		measured = self.waterTemperatureSensor.getTemperature()
 		# print ("Water temperature: {:.1f} °C".format(waterTemperature) )
 		
