@@ -69,7 +69,7 @@ def main():
         
     
     # Now, initialize all sensor classes
-    
+    # time.sleep(10000000)
     # GPIO expander    
     print("GPIO expander init.. ", end = '')
     gpioExpander = GPIOExpander() 
@@ -527,7 +527,7 @@ def main():
                 if( (waterLevelMainTank < 60) and (now > userInput.sunrise) and (now < userInput.sunset) and (waitingOnTankLevelDetection == False)):
                     
                     # Turn water refill pump on for 3 s
-                    gpio.pumpWaterSupply.value = 1      # 0.4                    
+                    # gpio.pumpWaterSupply.value = 1      # 0.4                    
                     print("Water refill pump turned on")
                     
                     time.sleep(3)
