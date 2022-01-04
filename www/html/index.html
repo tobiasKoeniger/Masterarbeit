@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+<!--
+    <embed src="localstream12345.asx” height=”370” width=”400">
+-->
+    <meta charset="UTF-8">        
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>    
+    
+    <!-- Add icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    
+    <link rel="stylesheet" href="mystyle.css">        
+    
+  </head>
+  
+  <body>
+    
+    <div id="information" align="right" style="font-size: 16px; font-family: Arial, sans-serif;"></div>
+    
+     <table style="width:65%;  margin-left: auto;  margin-right: auto; margin-bottom: 0.3cm">
+      <tr>
+	<th><div class="gauge" id="chart1" align="center"></div></th>
+	<th><div class="gauge" id="chart2" align="center"></div></th>
+	<th><div class="gauge" id="chart3" align="center"></div></th>
+	<th><div class="gauge" id="chart4" align="center"></div></th>	
+      </tr>
+      <tr>
+	<td style="text-align:center"><sup>mS</sup>/<sub>cm</sub></td>
+	<td style="text-align:center">lux <span>&#183;</span> 10</td>
+	<td style="text-align:center">°C</td>
+	<td style="text-align:center">PH level</td>
+      </tr>
+    </table> 
+    
+    
+    <table style="width:50%;  margin-left: auto;  margin-right: auto; margin-bottom: 1.9cm">
+      <tr>
+	<th><div class="gauge" id="chart5" align="center"></div></th>
+	<th><div class="gauge" id="chart6" align="center"></div></th>
+	<th><div class="gauge" id="chart7" align="center"></div></th>	
+      </tr>
+      <tr>
+	<td style="text-align:center">%</td>
+	<td style="text-align:center">Tem. in °C</td>
+	<td style="text-align:center">Level in mm</td>	
+      </tr>
+    </table> 
+    
+    
+<!--
+    <div id="upper_charts" style="margin-bottom: 0.3cm">
+      
+      <div class="label" id="week1" style="width: 100px; height: 20px; display: inline-block;"></div>
+      
+      <div class="gauge" id="chart1" style="width: 200px; height: 200px; display: inline-block; border: 3px solid white; margin-bottom: 0.2cm;"></div>
+      
+      <div class="label" style="display: inline-block; margin-left: -3.25cm; margin-top: 2cm;"> mS/cm </div>
+      
+      <div class="gauge" id="chart2" style="width: 200px; height: 200px; display: inline-block; margin-left: 2.25cm; margin-bottom: 0.2cm;"></div>
+      
+      <div class="label" style="display: inline-block; margin-left: -3.25cm; margin-top: 2cm;"> lux * 10<sup>-3</sup> </div>
+      
+      <div class="gauge" id="chart3" style="width: 200px; height: 200px; display: inline-block; margin-left: 2cm; margin-bottom: 0.2cm;"></div>
+      
+      <div class="label" style="display: inline-block; margin-left: -3cm; margin-top: 2cm;"> °C </div>
+      
+      <div class="gauge" id="chart4" style="width: 200px; height: 200px; display: inline-block; margin-left: 2.75cm; margin-bottom: 0cm;"></div>
+      
+    </div>
+-->
+
+
+<!--
+    <div id="lower_charts" style="margin-bottom: 0cm; margin-left: 0.87cm">
+      
+      <div class="label" id="week2" style="width: 200px; height: 0px; margin-left: 0cm; display: inline-block; ">  </div>
+      
+      <div class="gauge" id="chart5" style="width: 200px; height: 200px; display: inline-block; margin-left: 0.15cm;"></div> 
+      
+      <div class="label" style="display: inline-block; margin-left: -3.8cm; margin-top: -1cm;"> % </div>
+      
+      <div class="gauge" id="chart6" style="width: 200px; height: 200px; display: inline-block; margin-left: 3.75cm; margin-bottom: 0.2cm;"></div>
+      
+      <div class="label" style="display: inline-block; margin-left: -3.75cm; margin-top: -1cm;"> °C </div>
+      
+      <div class="gauge" id="chart7" style="width: 200px; height: 200px; display: inline-block; margin-left: 3.45cm; margin-top: 0cm; margin-bottom: -1cm;"></div>
+      
+      <div class="label" style="display: inline-block; margin-left: -3.9cm; margin-top: -1cm;"> mm </div>
+      
+    </div>
+-->
+    
+    <script src="charts.js"></script> 
+    
+    
+    <script type="text/javascript">
+		
+      var source = new EventSource("server_sends_data.php");
+
+      if(typeof(EventSource) !== "undefined") {
+	// Yes! Server-sent events support!
+	// Some code.....
+	document.getElementById("information").innerHTML += "Browser supports Server-Sent Events. <br>";
+	
+      } else {
+	// Sorry! No server-sent events support..
+	document.getElementById("information").innerHTML += "Browser DOES NOT support Server-Sent Events. <br>";
+      }	
+
+      source.onmessage = function(event) {
+	
+	sensorData = JSON.parse(event.data)
+
+	document.getElementById("information").innerHTML = "" + sensorData.time + "<br>";
+
+      };
+      
+    </script>
+    
+    <script>
+      document.getElementById("information").innerHTML = "Loading Settings";
+      
+      url = "server_sends_settings.php"
+      var req = new XMLHttpRequest();
+      req.overrideMimeType("application/json");
+      req.open('POST', url, false);
+      
+      req.onload  = function() {
+	 settings = JSON.parse(req.responseText);
+	 //console.log(settings);
+	 //console.log(settings.systemState);
+      };
+      
+      req.send(null);
+      
+      document.getElementById("information").innerHTML = "Settings Loaded";
+      
+    </script>
+    
+
+
+    
+    
+    
+    
+    <table style="width:50%;  margin-left: auto;  margin-right: auto; margin-bottom: 0.3cm">
+      
+      <tr>
+	<th style="text-align=left" align="left">
+	  <label id="week" style="text-align=left; margin-left: 17%; font-size: 18px;" align="left"> Week </label>
+	</th>
+      </tr>
+      
+      <tr>
+	
+	<th style="text-align=left" align="left">	  	      
+    
+	  <!-- https://www.cssscript.com/realistic-ios-switch-pure-css/ -->
+	  <div style="margin-bottom: 0.7cm; margin-left: 17%; margin-top: 0.1cm">      
+	      <label class="form-switch">	  
+		<input type="checkbox" id="checkboxSystemState" name="systemState" onchange="sendSystemState(this)">
+		<i></i>	
+		System 
+	      </label>       
+	  </div>
+	  
+	  <div style="margin-bottom: 0.7cm; margin-left: 17%">
+	    <label class="form-switch">
+	      <input type="checkbox" id="checkboxPHmeasureState" onchange="sendPHmeasureState(this)">
+	      <i></i>
+	      Measure PH Level
+	    </label>        
+	  </div>
+	  
+	  <div style="margin-bottom: 0.4cm; margin-left: 17%">
+	    <label class="form-switch">
+	      <input type="checkbox" id="checkboxLedState" onchange="sendLedState(this)">
+	      <i></i>
+	      LEDs
+	    </label>        
+	  </div>
+	  
+	  <div style="margin-bottom: 0.7cm; margin-left: 17%">
+	    <label class="form-switch">
+	      <input type="checkbox" id="checkboxAutoLedState" onchange="sendAutoLedState(this)">
+	      <i></i>
+	      Auto LED Lighting
+	    </label>        
+	  </div>
+	  
+	   <form style="margin-bottom: 0.3cm; margin-left: 17%">
+	     
+	    <label>LED Sunrise</label>
+	    <input type="time" id="sunrise" value="08:00" style="margin-bottom: 0.6cm; margin-left: 0.77cm; width: 3cm; border-radius: 5px;" onchange="sendLedSunrise(this)"> <br>
+	    
+	    <label>LED Sunset</label>
+	    <input type="time" id="sunset" value="20:00" style="margin-bottom: 0.6cm; margin-left: 0.9cm; width: 3cm; border-radius: 5px;" onchange="sendLedSunset(this)">
+	    
+	  </form> 
+	  
+	</th>
+	
+	
+	<th style="text-align=left" align="left">
+	  
+	  <div style="margin-top: 1.1cm; margin-bottom: 1cm; margin-left: 17%">
+	    <label class="form-switch">
+	      <input type="checkbox" id="checkboxAutoHeightAdaptionState" onchange="sendAutoHeightAdaptionState(this)">
+	      <i></i>
+	      Auto LED Height Adaption
+	    </label>        
+	  </div>
+	  
+	  
+	  <div style="margin-bottom: 0.3cm; margin-top: 0.5cm; margin-left: 17%">
+	    
+	    <button class="btn" style="margin-bottom: 0.2cm;" onmousedown="sendLedUpStart()" onmouseup="sendLedUpStop()"> <i class="fa fa-angle-double-up"></i> </button> <br>
+	    
+	    <label style="margin-bottom: 0.3cm; margin-top: 0.5cm; margin-left: 1.9cm" >LED Position </label> <br>
+	    
+	    <button class="btn" onmousedown="sendLedDownStart()" onmouseup="sendLedDownStop()"> <i class="fa fa-angle-double-down"></i> </button>  
+	  
+	  </div>
+	  
+	  
+	  <div style="margin-bottom: 0.6cm; margin-top: 0.8cm; margin-left: 17%">
+	    <button class="btn" style="margin-bottom: 0.2cm;" onmousedown="sendStartPlanting()"> <i class="fa fa-play-circle"></i> </button> 
+	    <label style="margin-left: 0.6cm">Start Planting</label> <br>    
+      <!--
+	    <button class="btn" onmousedown="sendResetPlantingTime(this)"> <i class="fa fa-step-backward"></i> </button> 
+	    <label style="margin-left: 0.7cm;">Reset</label> <br>
+      -->
+	  </div>
+	  
+	  <form style="margin-bottom: 0.3cm; margin-left: 17%">
+	     
+	    <label>Set Planting Date</label>
+	    <input type="date" id="setPlantingDate" onload="getDate()" style="margin-bottom: 0.6cm; margin-left: 0.77cm; width: 2.95cm; border-radius: 5px; value=" onchange="sendPlantingDate(this)"> <br>
+	    
+	  </form> 
+	</th>	
+	
+      </tr>
+<!--
+      <tr>
+	<td style="text-align:center"><sup>mS</sup>/<sub>cm</sub></td>
+	<td style="text-align:center">lux <span>&#183;</span> 10</td>
+      </tr>
+-->
+    </table> 
+    
+    
+    <script>
+      
+      function stringToBoolean(raw) {
+	
+	if (raw == "1") {
+	  return true
+	}
+	
+	else {
+	  return false
+	}
+      }
+    
+      document.getElementById("checkboxSystemState").checked = stringToBoolean(settings.systemState);
+      document.getElementById("checkboxPHmeasureState").checked = stringToBoolean(settings.pHmeasureState);
+      document.getElementById("checkboxLedState").checked = stringToBoolean(settings.ledState);
+      
+      var sunrise = settings.sunrise
+      sunrise = sunrise.substr(0, 5)
+      document.getElementById("sunrise").value = sunrise;
+      
+      var sunset = settings.sunset
+      sunset = sunset.substr(0, 5)
+      document.getElementById("sunset").value = sunset;
+      
+      document.getElementById("checkboxAutoLedState").checked = stringToBoolean(settings.autoLedState);
+      document.getElementById("checkboxAutoHeightAdaptionState").checked = stringToBoolean(settings.autoHeightAdaptionState);
+    
+      
+      function updateTimeSincePlanting() {
+	
+	today = new Date();
+	plantingDate = new Date(settings.plantingDate);
+	day_difference = Math.ceil((today - plantingDate) / (1000*60*60*24))
+	week_difference = Math.ceil((today - plantingDate) / (1000*60*60*24*7))
+	//document.getElementById("week").innerHTML = "Week " + week_difference + " Day " + day_difference
+	document.getElementById("week").innerHTML = "Growing for " + day_difference + " Days: " + "Week No. " + week_difference + "" 
+	
+      }
+      
+      updateTimeSincePlanting()
+    
+    </script>
+        
+    
+    <script>
+      
+      function sendDataToServer(data) {
+		
+	request= new XMLHttpRequest()
+	request.open("POST", "webpage_sends_data.php", true)
+	request.setRequestHeader("Content-type", "application/json")
+	request.send(data)
+	
+      }
+      
+      //time DATETIME,
+      //systemState BOOLEAN,
+      //pHmeasureState BOOLEAN,
+      //ledState BOOLEAN,
+      //autoLedState BOOLEAN,1
+      //sunrise TIME,
+      //sunset TIME,
+      //autoHeightAdaptionState BOOLEAN,
+      //plantingDate DATE, 
+      //ledUp BOOLEAN,
+      //ledDown BOOLEAN
+
+      function sendSystemState(systemCheckbox) {
+        if (systemCheckbox.checked) {
+	  sendDataToServer("systemState = TRUE");
+	} else {
+	  sendDataToServer("systemState = FALSE");
+	}
+      }
+      
+      async function sendPHmeasureState(pHmeasureState) {
+        if (pHmeasureState.checked) {
+	  
+	  sendDataToServer("pHmeasureState = TRUE");
+	  alert("You can insert the pH probe now into the main tank for c. 1 minute. Remove the protective glas on the probe before and reattach it afterwards timely.")	  
+	  alert("Do not keep the probe in the main tank for more than 1 minute. Otherwise it needs to be recalibrated with the calibration solutions.")
+	  // await new Promise(r => setTimeout(r, 120000));
+	  
+	  // alert("The pH sensor is powering down.")
+	  
+	  // pHmeasureState.checked = false;
+	  // sendDataToServer("pHmeasureState = FALSE");
+	  
+	} else {
+	  sendDataToServer("pHmeasureState = FALSE");
+	}
+      }
+      
+      function sendLedState(ledCheckbox) {
+        if (ledCheckbox.checked) {
+	  sendDataToServer("ledState = TRUE");
+	} else {
+	  sendDataToServer("ledState = FALSE");
+	}
+      }
+      
+      function sendAutoLedState(autoLedCheckbox) {
+        if (autoLedCheckbox.checked) {
+	  sendDataToServer("autoLedState = TRUE");
+	} else {
+	  sendDataToServer("autoLedState = FALSE");
+	}
+      }
+      
+      function sendLedSunrise(ledSunriseInputBox) {
+	sendDataToServer("sunrise = '" + String(ledSunriseInputBox.value) + "'");
+      }
+      
+      function sendLedSunset(ledSunsetInputBox) {
+	sendDataToServer("sunset = '" + String(ledSunsetInputBox.value) + "'");
+      }
+      
+      function sendAutoHeightAdaptionState(autoHeightAdaptionState) {
+        if (autoHeightAdaptionState.checked) {
+	  sendDataToServer("autoHeightAdaptionState = TRUE");
+	} else {
+	  sendDataToServer("autoHeightAdaptionState = FALSE");
+	}
+      }
+      
+      function getDate() {
+
+	var dateControl = document.querySelector('input[type="date"]');
+	dateControl.value = '2017-06-01';
+	document.getElementById("setPlantingDate").valueAsDate = new Date();
+	document.getElementById("setPlantingDate").value ="2018-08-22";
+
+      }
+      
+      function sendPlantingDate(setPlantingDateBox) {
+	sendDataToServer("plantingDate = '" + setPlantingDateBox.value + "'");
+	settings.plantingDate = setPlantingDateBox.value
+	
+	updateTimeSincePlanting()
+      }
+      
+      function sendStartPlanting() {
+	sendDataToServer("plantingDate = CURDATE()");
+	
+	date =  new Date();
+	y = date.getFullYear();
+	m = date.getMonth() + 1;
+	d = date.getDate();
+	
+	if (d < 10) 
+	{
+	    d = '0' + d;
+	} 
+
+	if (m < 10) 
+	{
+	    m = '0' + m;
+	} 
+	
+	dateFormatted = y + "-" + m + "-" + d
+	
+	settings.plantingDate = dateFormatted
+	
+	updateTimeSincePlanting()
+      }
+      
+      function sendLedUpStart() {
+	sendDataToServer("ledUp = TRUE");
+      }
+      
+      function sendLedUpStop() {
+	sendDataToServer("ledUp = FALSE");
+      }
+      
+      function sendLedDownStart() {
+	sendDataToServer("ledDown = TRUE");
+      }
+      
+      function sendLedDownStop() {
+	sendDataToServer("ledDown = FALSE");
+      }
+	    
+    </script>    
+  
+<!--
+  <iframe width="1000" height="557" style="margin-top: 1cm; margin-bottom: 0.6cm; margin-left: 15%" src="http://192.168.178.77:8000"> </iframe>
+-->
+  <iframe width="1000" height="557" frameBorder="0" style="margin-top: 1cm; margin-bottom: 0.6cm; margin-left: auto; margin-right: auto; display:block;" src="http://192.168.178.85:8000"> </iframe>
+
+   
+  </body>
+  
+</html>

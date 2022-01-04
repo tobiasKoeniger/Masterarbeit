@@ -1,0 +1,134 @@
+
+body{
+    font-family:helvetica;
+} 
+
+svg:first-child > g > text[text-anchor~=middle]{
+    font-size: 16px;
+}
+
+#chart5 svg:first-child > g > text[text-anchor~=middle]{
+    font-size: 10px;
+}
+
+#chart6 svg:first-child > g > text[text-anchor~=middle]{
+    font-size: 10px;
+}
+
+#chart7 svg:first-child > g > text[text-anchor~=middle]{
+    font-size: 10px;
+}
+
+#chart8 svg:first-child > g > text[text-anchor~=middle]{
+    font-size: 10px;
+}
+
+
+/*
+table, th, td {
+  border: 1px solid black;
+}
+*/
+
+
+
+span.frac {
+	display: inline-block;
+	text-align: center;
+}
+span.frac > sup {
+	display: block;
+	border-bottom: 1px solid;
+	font: inherit;
+}
+span.frac > span {
+	display: none;
+}
+span.frac > sub {
+	display: block;
+	font: inherit;
+}
+
+
+
+ /* Style buttons */
+.btn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+/*
+  height: 40px;
+  width: 40px;
+*/
+  border-radius: 50%;
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+} 
+
+/* https://www.cssscript.com/realistic-ios-switch-pure-css/ */
+
+.form-switch {
+  display: inline-block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.form-switch i {
+  position: relative;
+  display: inline-block;
+  margin-right: .5rem;
+  width: 46px;
+  height: 26px;
+  background-color: #e6e6e6;
+  border-radius: 23px;
+  vertical-align: text-bottom;
+  transition: all 0.3s linear;
+}
+
+.form-switch i::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 42px;
+  height: 22px;
+  background-color: #fff;
+  border-radius: 11px;
+  transform: translate3d(2px, 2px, 0) scale3d(1, 1, 1);
+  transition: all 0.25s linear;
+}
+
+.form-switch i::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  background-color: #fff;
+  border-radius: 11px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.24);
+  transform: translate3d(2px, 2px, 0);
+  transition: all 0.2s ease-in-out;
+}
+
+.form-switch:active i::after {
+  width: 28px;
+  transform: translate3d(2px, 2px, 0);
+}
+
+.form-switch:active input:checked + i::after { transform: translate3d(16px, 2px, 0); }
+
+.form-switch input { display: none; }
+
+.form-switch input:checked + i { background-color: #4BD763; }
+
+.form-switch input:checked + i::before { transform: translate3d(18px, 2px, 0) scale3d(0, 0, 0); }
+
+.form-switch input:checked + i::after { transform: translate3d(22px, 2px, 0); }
+
+
