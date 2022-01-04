@@ -1,5 +1,5 @@
 
-# Hydroponic System Software 
+# Hydroponic System Software Prototype
 
 Check out the master thesis as pdf:
 
