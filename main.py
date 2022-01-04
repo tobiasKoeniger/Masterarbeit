@@ -69,7 +69,7 @@ def main():
         
     
     # Now, initialize all sensor classes
-    # time.sleep(10000000)
+    
     # GPIO expander    
     print("GPIO expander init.. ", end = '')
     gpioExpander = GPIOExpander() 
