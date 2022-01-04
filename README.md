@@ -1,9 +1,9 @@
 
 # Hydroponic System Software 
 
-Check out our Wiki page:
+Check out the accompanying master thesis:
 
-https://github.com/tobiasKoeniger/Masterarbeit/wiki
+https://1drv.ms/w/s!AiGYLVbsrAJV2AMbYNHREmfzdmDh
 
 
 
